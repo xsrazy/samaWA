@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>samaWA Admin - Kotak Masuk Mempelai</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#008069">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div id="login-view" class="login-wrap">
+  <form id="login-form" class="login-card">
+    <div class="login-logo">sama<span>WA</span></div>
+    <p class="login-sub">Kotak masuk mempelai. Masuk buat ngelola RSVP, grup resepsi, dan naskah undangan.</p>
+    <label>Email<input id="login-email" type="email" required autocomplete="username"></label>
+    <label>Password<input id="login-pass" type="password" required autocomplete="current-password"></label>
+    <button type="submit">Masuk</button>
+    <div id="login-err" class="err"></div>
+  </form>
+</div>
+
+<div id="admin-view" class="admin-wrap hidden">
+  <aside class="rail">
+    <header class="rail-head">
+      <span class="avatar"><img src="/assets/img/couple.webp" alt="Usra dan Zee"></span>
+      <b>samaWA Admin</b>
+      <button id="logout" title="Keluar">&#10162;</button>
+    </header>
+    <div class="rail-search"><input id="rail-q" type="text" placeholder="Cari chat"></div>
+    <nav class="threads">
+      <button class="thread-item active" data-mod="rsvp"><span class="t-ic green">&#128202;</span><span class="t-mid"><b>Polling RSVP</b><small id="t-rsvp">Memuat...</small></span><span class="t-count" id="c-rsvp"></span></button>
+      <button class="thread-item" data-mod="grup"><span class="t-ic teal">&#128101;</span><span class="t-mid"><b>Grup Resepsi</b><small id="t-grup">Memuat...</small></span><span class="t-count" id="c-grup"></span></button>
+      <button class="thread-item" data-mod="naskah"><span class="t-ic purple">&#128221;</span><span class="t-mid"><b>Naskah Undangan</b><small id="t-naskah">Urutan bubble di chat undangan</small></span></button>
+      <button class="thread-item" data-mod="atur"><span class="t-ic grey">&#9881;</span><span class="t-mid"><b>Pengaturan</b><small>Data acara, amplop, password</small></span></button>
+    </nav>
+    <div class="rail-foot">Samawa admin. Tampilan meniru WhatsApp Web, isinya beneran.</div>
+  </aside>
+  <main class="pane" id="pane"></main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

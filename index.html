@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>samaWA - Undangan Pernikahan Usra &amp; Zee</title>
+<meta name="description" content="Undangan pernikahan digital Usra & Zee dalam bentuk obrolan WhatsApp. Senin, 17 Januari 2050 di Jam Gadang, Bukittinggi. Buka chatnya, baca undangannya, konfirmasi lewat polling, dan gabung grup resepsinya.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="samaWA">
+<meta property="og:title" content="samaWA - Undangan Pernikahan Usra & Zee">
+<meta property="og:description" content="Kamu dapat pesan baru dari Usra & Zee. Buka obrolannya dan baca undangan pernikahan mereka, Senin 17 Januari 2050 di Jam Gadang, Bukittinggi.">
+<meta property="og:url" content="https://samawa.xsrazy.web.id/">
+<meta property="og:image" content="https://samawa.xsrazy.web.id/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="samaWA - Undangan Pernikahan Usra & Zee">
+<meta name="twitter:description" content="Undangan pernikahan dalam bentuk obrolan WhatsApp. Senin, 17 Januari 2050, Jam Gadang, Bukittinggi.">
+<meta name="twitter:image" content="https://samawa.xsrazy.web.id/assets/img/og.jpg">
+<meta name="theme-color" content="#008069">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+<link rel="apple-touch-icon" href="/assets/img/icon-512.png">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ CHAT LIST ============ -->
+  <section id="view-chats" class="view active">
+    <header class="topbar">
+      <div class="topbar-title">sama<span class="wa-big">WA</span></div>
+      <div class="topbar-icons"><span class="ic" data-deco>&#128247;</span><span class="ic" data-deco>&#128269;</span><span class="ic" data-deco>&#8942;</span></div>
+    </header>
+    <div class="searchbar"><div class="search-pill">&#128269;&nbsp; Cari atau mulai chat baru</div></div>
+    <div class="status-zone">
+      <div class="status-label">Status</div>
+      <div class="status-row">
+        <button class="status-item" id="status-open">
+          <span class="status-ring"><img src="/assets/img/couple.webp" alt="Foto Usra dan Zee"></span>
+          <span class="status-name">Usra &amp; Zee</span>
+          <span class="status-time">Baru saja</span>
+        </button>
+        <div class="status-item dim">
+          <span class="status-ring off"><img src="/assets/img/groom.webp" alt="Foto Usra"></span>
+          <span class="status-name">Usra</span>
+          <span class="status-time">Kemarin</span>
+        </div>
+        <div class="status-item dim">
+          <span class="status-ring off"><img src="/assets/img/bride.webp" alt="Foto Zee"></span>
+          <span class="status-name">Zee</span>
+          <span class="status-time">Kemarin</span>
+        </div>
+      </div>
+    </div>
+    <div class="chatlist" id="chatlist">
+      <button class="chat-item" id="chat-real">
+        <span class="avatar"><img src="/assets/img/couple.webp" alt="Foto Usra dan Zee"></span>
+        <span class="chat-mid">
+          <span class="chat-top"><span class="chat-name">Usra &amp; Zee</span><span class="chat-time unread" id="chat-time">01.09</span></span>
+          <span class="chat-preview"><span class="ticks read">&#10003;&#10003;</span> Assalamualaikum! Kami punya kabar bahagia, buka ya undangannya</span>
+        </span>
+        <span class="badge" id="unread-badge">1</span>
+      </button>
+      <button class="chat-item" data-deco-chat>
+        <span class="avatar"><img src="/assets/img/groom.webp" alt="Grup Keluarga Besar"></span>
+        <span class="chat-mid">
+          <span class="chat-top"><span class="chat-name">Keluarga Besar</span><span class="chat-time">Kemarin</span></span>
+          <span class="chat-preview">Mama: Jangan lupa acara tanggal 17 ya</span>
+        </span>
+      </button>
+      <button class="chat-item" data-deco-chat>
+        <span class="avatar"><img src="/assets/img/bride.webp" alt="Panitia Resepsi"></span>
+        <span class="chat-mid">
+          <span class="chat-top"><span class="chat-name">Panitia Resepsi</span><span class="chat-time">Kemarin</span></span>
+          <span class="chat-preview">Zee: Sound system sudah aman</span>
+        </span>
+      </button>
+    </div>
+    <div class="fab" data-deco>&#128172;</div>
+    <footer class="chats-foot">Undangan pernikahan digital dalam bentuk obrolan. Ketuk chat Usra &amp; Zee untuk membuka.</footer>
+  </section>
+
+  <!-- ============ THREAD ============ -->
+  <section id="view-thread" class="view">
+    <header class="chatbar">
+      <button class="back" data-go="chats">&#8592;</button>
+      <button class="chatbar-id" id="open-profile">
+        <span class="avatar sm"><img src="/assets/img/couple.webp" alt="Foto Usra dan Zee"></span>
+        <span class="chatbar-names"><span class="chatbar-name">Usra &amp; Zee</span><span class="chatbar-status" id="typing-status">online</span></span>
+      </button>
+      <div class="topbar-icons"><span class="ic" data-deco>&#128249;</span><span class="ic" data-deco>&#128222;</span><span class="ic" id="replay-btn" title="Putar ulang undangan">&#8942;</span></div>
+    </header>
+    <main class="thread" id="thread-msgs"></main>
+    <div class="inputbar">
+      <div class="input-pill"><span class="ic" data-deco>&#128522;</span><span class="input-fake">Pesan</span><span class="ic" data-deco>&#128206;</span><span class="ic" data-deco>&#128247;</span></div>
+      <div class="mic" data-deco>&#127908;</div>
+    </div>
+  </section>
+
+  <!-- ============ GROUP ============ -->
+  <section id="view-group" class="view">
+    <header class="chatbar">
+      <button class="back" data-go="thread">&#8592;</button>
+      <div class="chatbar-id">
+        <span class="avatar sm"><img src="/assets/img/couple.webp" alt="Foto grup resepsi"></span>
+        <span class="chatbar-names"><span class="chatbar-name" id="group-name">Grup Resepsi</span><span class="chatbar-status" id="group-members">Usra, Zee, kamu</span></span>
+      </div>
+      <div class="topbar-icons"><span class="ic" data-deco>&#128249;</span><span class="ic" data-deco>&#128222;</span><span class="ic" data-deco>&#8942;</span></div>
+    </header>
+    <main class="thread" id="group-msgs"></main>
+    <div class="inputbar">
+      <div class="input-pill real"><span class="ic" data-deco>&#128522;</span><input id="group-input" type="text" maxlength="500" placeholder="Pesan" autocomplete="off"><span class="ic" data-deco>&#128206;</span></div>
+      <button class="mic send" id="group-send" title="Kirim">&#10148;</button>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE ============ -->
+  <section id="view-profile" class="view">
+    <header class="chatbar">
+      <button class="back" data-go="thread">&#8592;</button>
+      <div class="chatbar-id"><span class="chatbar-names"><span class="chatbar-name">Profil</span></span></div>
+      <div class="topbar-icons"><span class="ic" data-deco>&#8942;</span></div>
+    </header>
+    <div class="profile-photo"><img src="/assets/img/couple.webp" alt="Foto Usra dan Zee"></div>
+    <div class="profile-name" id="profile-name">Usra &amp; Zee</div>
+    <div class="profile-sub">+62 812-3456-1748</div>
+    <div class="profile-card">
+      <div class="profile-about" id="profile-about">Hei, kami pakai samaWA! Sampai jumpa di Jam Gadang, Senin 17 Januari 2050.</div>
+      <div class="profile-about-sub">Info</div>
+    </div>
+    <div class="profile-list">
+      <button class="profile-row" id="profile-status-row"><span class="pr-ic">&#128247;</span><span><b>Status kami</b><small>Lihat momen Usra &amp; Zee</small></span></button>
+      <div class="profile-row"><span class="pr-ic">&#128197;</span><span><b>Senin, 17 Januari 2050</b><small>Akad 10.00 WIB, Resepsi 13.00 WIB</small></span></div>
+      <a class="profile-row" id="profile-maps" href="#" target="_blank" rel="noopener"><span class="pr-ic">&#128205;</span><span><b id="profile-venue">Jam Gadang</b><small id="profile-venue-addr">Benteng Pasar Atas, Bukittinggi</small></span></a>
+      <button class="profile-row" data-go="group"><span class="pr-ic">&#128101;</span><span><b id="profile-group">Grup Resepsi</b><small>Buku tamu dan obrolan para tamu</small></span></button>
+    </div>
+  </section>
+
+  <!-- ============ STATUS VIEWER ============ -->
+  <section id="view-status" class="view">
+    <div class="status-progress" id="status-progress"></div>
+    <header class="status-head">
+      <button class="back light" id="status-close">&#8592;</button>
+      <span class="avatar sm"><img src="/assets/img/couple.webp" alt="Foto Usra dan Zee"></span>
+      <span class="chatbar-names"><span class="chatbar-name">Usra &amp; Zee</span><span class="chatbar-status">Hari ini 01.09</span></span>
+    </header>
+    <div class="status-stage"><img class="status-bg" id="status-bg" src="/assets/img/couple.webp" alt="" aria-hidden="true"><img id="status-img" src="/assets/img/couple.webp" alt="Status Usra dan Zee"></div>
+    <div class="status-caption" id="status-caption">Menuju hari bahagia</div>
+    <button class="status-zone-btn prev" id="status-prev" aria-label="Sebelumnya"></button>
+    <button class="status-zone-btn next" id="status-next" aria-label="Berikutnya"></button>
+  </section>
+
+</div>
+
+<!-- name gate -->
+<div id="name-gate" class="gate hidden">
+  <div class="gate-card">
+    <div class="gate-title">Nama kamu siapa?</div>
+    <p class="gate-sub">Nama ini tampil di samping pesan kamu di grup resepsi dan di daftar konfirmasi kehadiran.</p>
+    <input id="gate-name" type="text" maxlength="40" placeholder="Nama kamu" autocomplete="name">
+    <button id="gate-save">Simpan</button>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<audio id="vn-audio" preload="metadata"></audio>
+<script src="/js/app.js"></script>
+</body>
+</html>
