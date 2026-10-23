@@ -19,12 +19,15 @@ The demo content is a fictional wedding (Usra & Zee, Monday, 17 January 2050 at 
 - Bubble types: personalised text (the guest's name is inserted automatically), photo, live countdown to the wedding date, location card with a maps link, verse, voice note, digital envelope (gift accounts with copy buttons), RSVP poll, and a group invite card
 - Voice note player with the real soundtrack: play/pause, waveform progress, and 1x / 1.5x / 2x playback speed
 - RSVP poll: one vote per guest name, changeable at any time, with live counts shown after voting
-- Group chat guest book: guests join with their name and post congratulations; new messages appear instantly and the view refreshes itself
+- Group chat guest book: guests join with their name and post congratulations; new messages appear instantly and the view refreshes itself. Once joined, the group also appears in the guest's chat list with a last-message preview and an unread badge
 - Status viewer with segments, progress bars, tap zones, and a blurred backdrop, showing the couple, groom, and bride
 - Couple profile page with photo, bio, date, venue, and group rows
 - Guest identity comes from a personal `?to=Guest+Name` link or a one-time name prompt, stored in the browser; there is no access key to type
 - All couple photography is always shown whole, never cropped, in avatars, bubbles, profile, and status
-- Admin dashboard styled after WhatsApp Web: RSVP results, guest book moderation, a conversation script editor (reorder, add, and remove bubbles), site settings, poll question editing, and password change
+- Responsive: on phones it looks like the WhatsApp app; on wide screens it switches to a WhatsApp Web layout with the chat list and the open conversation side by side
+- iPhone-style notification banner when the invitation chat first arrives, and again when a new group message lands while the guest is elsewhere in the app; tapping it opens the chat
+- Bubble timestamps follow the visitor's real clock, so the conversation always looks like it just happened
+- Admin dashboard styled after WhatsApp Web: a summary overview with stat cards and poll bars, chat-style RSVP and guest book views with moderation, a conversation script editor (reorder, add, and remove bubbles) with a live phone preview, site settings, poll question editing, and password change
 
 ## Architecture
 

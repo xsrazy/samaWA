@@ -1,13 +1,23 @@
 // samaWA public app: the invitation is a WhatsApp conversation.
 const $ = (s) => document.querySelector(s);
-const state = { data: null, guest: '', vote: null, playedAll: false, groupTimer: null, groupMsgs: [], pendingMsgs: [] };
+const state = { data: null, guest: '', vote: null, playedAll: false, groupTimer: null, groupMsgs: [], pendingMsgs: [], joined: false, groupFrom: 'thread' };
 
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hidden'), 2400); }
+const webMq = window.matchMedia('(min-width: 900px)');
+function isWeb() { return webMq.matches; }
 function show(view) {
-  document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-  $('#view-' + view).classList.add('active');
+  if (isWeb()) {
+    // WhatsApp Web mode: the chat list stays as the left pane, the target opens on the right
+    document.querySelectorAll('.view').forEach((v) => { if (v.id !== 'view-chats') v.classList.remove('active'); });
+    $('#view-chats').classList.add('active');
+    $('#view-' + (view === 'chats' ? 'thread' : view)).classList.add('active');
+  } else {
+    document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+    $('#view-' + view).classList.add('active');
+  }
   if (view !== 'group') { clearInterval(state.groupTimer); state.groupTimer = null; }
+  if (view === 'chats') updateGroupEntry();
   window.scrollTo(0, 0);
 }
 function guestName() {
@@ -16,7 +26,43 @@ function guestName() {
   return localStorage.getItem('samawa_name') || '';
 }
 function fmtTime(ts) { const d = new Date(ts); return String(d.getHours()).padStart(2, '0') + '.' + String(d.getMinutes()).padStart(2, '0'); }
-function bubbleTime(i) { return '09.' + String(41 + i).padStart(2, '0'); }
+
+// ---------- iPhone-style incoming chat notification ----------
+let notifTimer = null, notifAction = null, userTouched = false, lastGroupCount = null;
+document.addEventListener('pointerdown', () => { userTouched = true; }, { once: true });
+function ding() {
+  if (!userTouched) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = ding.ctx || (ding.ctx = new Ctx());
+    if (ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime;
+    [1318.5, 1760].forEach((fr, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = fr;
+      g.gain.setValueAtTime(0.0001, t + i * 0.09);
+      g.gain.exponentialRampToValueAtTime(0.1, t + i * 0.09 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 0.4);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t + i * 0.09); o.stop(t + i * 0.09 + 0.45);
+    });
+  } catch { /* sound is a bonus, never break the app for it */ }
+}
+function notify(title, body, action) {
+  $('#notif-title').textContent = title;
+  $('#notif-body').textContent = body;
+  notifAction = action || null;
+  const el = $('#ios-notif');
+  el.classList.add('show');
+  ding();
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => el.classList.remove('show'), 5600);
+}
+function bubbleTime(i) {
+  const total = row.total || 1;
+  const base = row.baseTs || Date.now();
+  return fmtTime(base - (total - 1 - i) * 60000);
+}
 
 // ---------- bubble renderers ----------
 function row(html, cls) { return `<div class="row in"><div class="bubble ${cls || ''}">${html}<span class="time">${bubbleTime(row.i++)}</span></div></div>`; }
@@ -37,20 +83,20 @@ const R = {
     return row(`<img src="${esc(src)}" alt="Foto mempelai"><div class="cap">${esc(item.caption || '')}</div>`, 'photo');
   },
   countdown(s) {
-    return row(`<div class="countdown"><div class="cd-nums" data-cd>...</div><div class="cd-label">hari : jam : menit : detik menuju hari bahagia</div><div class="cd-date">${esc(s.dateLabel)}</div></div>`);
+    return row(`<div class="countdown"><div class="cd-grid" data-cd-grid><div class="cd-cell days"><div class="cd-v" data-cd-d>0</div><div class="cd-l">hari</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-h>00</div><div class="cd-l">jam</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-m>00</div><div class="cd-l">menit</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-s>00</div><div class="cd-l">detik</div></div></div><div class="cd-label">menuju hari bahagia</div><div class="cd-date">${esc(s.dateLabel)}</div></div>`);
   },
   location(s) {
-    return row(`<div class="loc-card"><div class="loc-map"><span class="loc-pin">&#128205;</span></div><div class="loc-body"><b>${esc(s.venue)}</b><p>${esc(s.venueAddr)}</p></div><a class="loc-link" href="${esc(s.mapsUrl)}" target="_blank" rel="noopener">Lihat Lokasi</a></div>`);
+    return row(`<div class="loc-card"><div class="loc-map"><span class="loc-pin">&#128205;</span></div><div class="loc-body"><b>${esc(s.venue)}</b><p>${esc(s.venueAddr)}</p></div><a class="loc-link" href="${esc(s.mapsUrl)}" target="_blank" rel="noopener">Lihat Lokasi</a></div>`, 'loc');
   },
   verse(s) {
     return row(`<p>${esc(s.verse)}</p>`, 'verse');
   },
   voice(s, item) {
     const bars = Array.from({ length: 36 }, () => 6 + Math.round(Math.random() * 22)).map((h) => `<i style="height:${h}px"></i>`).join('');
-    return row(`<div class="vn"><button class="vn-play" data-vn-play>&#9654;</button><div class="vn-mid"><div class="vn-wave" data-vn-wave>${bars}</div><div class="vn-meta"><span data-vn-dur>0:23</span><span class="vn-cap">${esc(item.caption || 'Pesan suara')}</span><button class="vn-rate" data-vn-rate>1x</button></div></div><div class="vn-side"><span class="avatar"><img src="${esc(s.photo)}" alt="Usra dan Zee"></span><span class="vn-mic">&#127908;</span></div></div>`);
+    return row(`<div class="vn"><button class="vn-play" data-vn-play>&#9654;</button><div class="vn-mid"><div class="vn-wave" data-vn-wave>${bars}</div><div class="vn-meta"><span data-vn-dur>0:23</span><span class="vn-cap">${esc(item.caption || 'Pesan suara')}</span><button class="vn-rate" data-vn-rate>1x</button></div></div><div class="vn-side"><span class="avatar"><img src="${esc(s.photo)}" alt="Usra dan Zee"></span></div></div>`);
   },
   gift(s) {
-    const rowsHtml = s.gift.map((g) => `<div class="gift-row"><span class="gift-bank">${esc(g.bank)}</span><span><span class="gift-num">${esc(g.num)}</span><br><span class="gift-name">a.n. ${esc(g.name)}</span></span><button class="gift-copy" data-copy="${esc(g.num)}">SALIN</button></div>`).join('');
+    const rowsHtml = s.gift.map((g) => `<div class="gift-row"><span class="gift-bank">${esc(g.bank)}</span><span class="gift-mid"><span class="gift-num">${esc(g.num)}</span><span class="gift-name">A.n. ${esc(g.name)}</span></span><button class="gift-copy" data-copy="${esc(g.num)}">SALIN</button></div>`).join('');
     return row(`<b>&#128140; Amplop Digital</b><p style="color:var(--muted);font-size:13.5px;margin:2px 0 4px">Doa restu kamu yang utama. Kalau ingin memberi tanda kasih, ini salurannya:</p>${rowsHtml}`);
   },
   poll(s, item, poll) {
@@ -74,7 +120,7 @@ function renderPoll(poll) {
 async function playThread() {
   const box = $('#thread-msgs');
   const d = state.data;
-  row.i = 0;
+  row.i = 0; row.total = d.script.length; row.baseTs = Date.now();
   box.innerHTML = `<div class="date-chip">Hari ini</div><div class="sys-chip">&#128274; Pesan dan panggilan terenkripsi secara end-to-end. <b>Usra &amp; Zee</b> tidak bisa membaca chat ini, yang bisa cuma kamu dan tanggal 17 Januari 2050.</div>`;
   const instant = sessionStorage.getItem('samawa_seen') === '1';
   const statusEl = $('#typing-status');
@@ -101,8 +147,9 @@ async function playThread() {
 
 let cdTimer = null;
 function startCountdown() {
-  const el = document.querySelector('[data-cd]');
-  if (!el) return;
+  const grid = document.querySelector('[data-cd-grid]');
+  if (!grid) return;
+  const f = { d: grid.querySelector('[data-cd-d]'), h: grid.querySelector('[data-cd-h]'), m: grid.querySelector('[data-cd-m]'), s: grid.querySelector('[data-cd-s]') };
   const target = new Date(state.data.settings.dateISO).getTime();
   const tick = () => {
     let diff = Math.max(0, target - Date.now());
@@ -110,7 +157,10 @@ function startCountdown() {
     const hrs = Math.floor(diff / 36e5); diff -= hrs * 36e5;
     const min = Math.floor(diff / 6e4); diff -= min * 6e4;
     const sec = Math.floor(diff / 1e3);
-    el.textContent = `${days} : ${String(hrs).padStart(2, '0')} : ${String(min).padStart(2, '0')} : ${String(sec).padStart(2, '0')}`;
+    f.d.textContent = days;
+    f.h.textContent = String(hrs).padStart(2, '0');
+    f.m.textContent = String(min).padStart(2, '0');
+    f.s.textContent = String(sec).padStart(2, '0');
   };
   tick(); clearInterval(cdTimer); cdTimer = setInterval(tick, 1000);
 }
@@ -197,25 +247,62 @@ async function loadGroup() {
     const res = await fetch('/api/messages');
     const out = await res.json();
     state.groupMsgs = out.messages || [];
+    lastGroupCount = state.groupMsgs.length;
+    markGroupSeen();
     renderGroup(mergedMsgs());
+    updateGroupEntry();
     const names = new Set(state.groupMsgs.map((m) => m.name.toLowerCase()));
     $('#group-members').textContent = `Usra, Zee, dan ${names.size} tamu lainnya`;
   } catch { /* keep last render */ }
 }
+function markGroupSeen() { try { localStorage.setItem('samawa_group_seen', String((state.groupMsgs || []).length)); } catch {} }
+function updateGroupEntry() {
+  const el = $('#chat-group');
+  if (!el) return;
+  if (!state.joined || !state.data) { el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  $('#group-chat-name').textContent = state.data.settings.groupName;
+  const msgs = state.groupMsgs || [];
+  const last = msgs[msgs.length - 1];
+  const timeEl = $('#group-chat-time');
+  if (last) {
+    const mine = state.guest && last.name.toLowerCase() === state.guest.toLowerCase();
+    $('#group-chat-preview').textContent = (mine ? 'Kamu' : last.name) + ': ' + last.text;
+    timeEl.textContent = fmtTime(last.ts);
+  } else {
+    $('#group-chat-preview').textContent = 'Kamu sudah gabung grup ini';
+    timeEl.textContent = '';
+  }
+  const seen = Number(localStorage.getItem('samawa_group_seen') || 0);
+  const unread = Math.max(0, msgs.length - seen);
+  const badge = $('#group-badge');
+  badge.textContent = unread ? String(unread) : '';
+  badge.classList.toggle('hidden', !unread);
+  timeEl.classList.toggle('unread', unread > 0);
+}
 function openGroup() {
   if (!state.guest) { openGate(openGroup); return; }
+  state.groupFrom = document.querySelector('#view-chats.active') ? 'chats' : 'thread';
+  state.joined = true;
+  try { localStorage.setItem('samawa_joined', '1'); } catch {}
   show('group');
   $('#group-name').textContent = state.data.settings.groupName;
   loadGroup();
   clearInterval(state.groupTimer);
   state.groupTimer = setInterval(loadGroup, 20000);
 }
+function syncSendBtn() {
+  const has = $('#group-input').value.trim().length > 0;
+  const btn = $('#group-send');
+  btn.querySelector('.ic-mic').classList.toggle('hidden', has);
+  btn.querySelector('.ic-send').classList.toggle('hidden', !has);
+}
 async function sendGroup() {
   const input = $('#group-input');
   const text = input.value.trim();
   if (!text) return;
   if (!state.guest) { openGate(sendGroup); return; }
-  input.value = '';
+  input.value = ''; syncSendBtn();
   const pending = { name: state.guest, text, ts: Date.now() };
   state.pendingMsgs.push(pending);
   renderGroup(mergedMsgs());
@@ -233,6 +320,7 @@ async function sendGroup() {
 // ---------- name gate ----------
 let gateNext = null;
 function openGate(next) { gateNext = next || null; $('#name-gate').classList.remove('hidden'); setTimeout(() => $('#gate-name').focus(), 60); }
+function cancelGate() { $('#name-gate').classList.add('hidden'); gateNext = null; }
 function closeGate() {
   const name = $('#gate-name').value.trim().slice(0, 40);
   if (!name) { toast('Isi nama dulu ya'); return; }
@@ -279,6 +367,13 @@ async function boot() {
     $('#profile-venue-addr').textContent = s.venueAddr;
     $('#profile-maps').href = s.mapsUrl;
     $('#profile-group').textContent = s.groupName;
+    $('#chat-time').textContent = fmtTime(Date.now());
+    const stEl = $('#status-time'); if (stEl) stEl.textContent = 'Hari ini ' + fmtTime(Date.now());
+    state.joined = localStorage.getItem('samawa_joined') === '1';
+    if (state.joined) {
+      try { const r2 = await fetch('/api/messages'); const o2 = await r2.json(); state.groupMsgs = o2.messages || []; } catch {}
+    }
+    updateGroupEntry();
   } catch { toast('Gagal memuat, periksa koneksi kamu'); }
 
   $('#chat-real').onclick = () => { $('#unread-badge') && ($('#unread-badge').style.display = 'none'); show('thread'); if (!state.playedAll) playThread(); else { $('#thread-msgs').scrollTop = $('#thread-msgs').scrollHeight; } };
@@ -294,8 +389,51 @@ async function boot() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#view-status').classList.contains('active')) { clearTimeout(statusTimer); show('chats'); } });
   $('#status-next').onclick = () => { if (statusIx < STATUS_ITEMS.length - 1) { statusIx++; runStatus(); } else { clearTimeout(statusTimer); show('chats'); } };
   $('#status-prev').onclick = () => { if (statusIx > 0) { statusIx--; runStatus(); } };
-  $('#group-send').onclick = sendGroup;
+  $('#chat-group').onclick = openGroup;
+  $('#group-back').onclick = () => show(state.groupFrom === 'chats' ? 'chats' : 'thread');
+  $('#group-send').onclick = () => { if ($('#group-input').value.trim()) sendGroup(); else { $('#group-input').focus(); toast('Ketik pesan dulu ya'); } };
+  $('#group-input').addEventListener('input', syncSendBtn);
   $('#group-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendGroup(); });
+  if (isWeb()) { show('thread'); playThread(); }
+  let wasWeb = isWeb();
+  window.addEventListener('resize', () => {
+    const w = isWeb();
+    if (w === wasWeb) return;
+    wasWeb = w;
+    const cur = document.querySelector('#view-group.active, #view-profile.active, #view-status.active, #view-thread.active');
+    show(cur ? cur.id.replace('view-', '') : 'chats');
+    if (w && !state.playedAll) playThread();
+  });
+  $('#ios-notif').onclick = () => { $('#ios-notif').classList.remove('show'); if (notifAction) { const f = notifAction; notifAction = null; f(); } };
+  $('#gate-cancel').onclick = cancelGate;
+  $('#name-gate').addEventListener('click', (e) => { if (e.target.id === 'name-gate') cancelGate(); });
+  // the invitation "arrives" like a real chat shortly after the list first opens (mobile app mode)
+  if (!isWeb() && state.data && !sessionStorage.getItem('samawa_notified')) {
+    setTimeout(() => {
+      if (state.playedAll || !$('#view-chats').classList.contains('active')) return;
+      sessionStorage.setItem('samawa_notified', '1');
+      const s = state.data.settings;
+      notify(s.groom + ' & ' + s.bride, 'Assalamualaikum! Kami punya kabar bahagia, buka ya undangannya', () => $('#chat-real').click());
+    }, 1500);
+  }
+  // new group messages arrive as iPhone-style banners while the guest is elsewhere in the app
+  setInterval(async () => {
+    if (!state.joined || !state.data) return;
+    if ($('#view-group').classList.contains('active')) return;
+    try {
+      const r = await fetch('/api/messages');
+      const o = await r.json();
+      const msgs = o.messages || [];
+      if (lastGroupCount == null) { lastGroupCount = msgs.length; state.groupMsgs = msgs; return; }
+      if (msgs.length > lastGroupCount) {
+        const m = msgs[msgs.length - 1];
+        state.groupMsgs = msgs;
+        lastGroupCount = msgs.length;
+        updateGroupEntry();
+        if (!(state.guest && m.name.toLowerCase() === state.guest.toLowerCase())) notify(m.name, m.text, openGroup);
+      }
+    } catch { /* silent poll */ }
+  }, 25000);
   $('#gate-save').onclick = closeGate;
   $('#gate-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') closeGate(); });
 }
