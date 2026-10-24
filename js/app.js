@@ -306,18 +306,12 @@ function openGroup() {
   clearInterval(state.groupTimer);
   state.groupTimer = setInterval(loadGroup, 20000);
 }
-function syncSendBtn() {
-  const has = $('#group-input').value.trim().length > 0;
-  const btn = $('#group-send');
-  btn.querySelector('.ic-mic').classList.toggle('hidden', has);
-  btn.querySelector('.ic-send').classList.toggle('hidden', !has);
-}
 async function sendGroup() {
   const input = $('#group-input');
   const text = input.value.trim();
   if (!text) return;
   if (!state.guest) { openGate(sendGroup); return; }
-  input.value = ''; syncSendBtn();
+  input.value = '';
   const pending = { name: state.guest, text, ts: Date.now() };
   state.pendingMsgs.push(pending);
   renderGroup(mergedMsgs());
@@ -407,7 +401,6 @@ async function boot() {
   $('#chat-group').onclick = openGroup;
   $('#group-back').onclick = () => show(state.groupFrom === 'chats' ? 'chats' : 'thread');
   $('#group-send').onclick = () => { if ($('#group-input').value.trim()) sendGroup(); else { $('#group-input').focus(); toast('Ketik pesan dulu ya'); } };
-  $('#group-input').addEventListener('input', syncSendBtn);
   $('#group-input').addEventListener('focus', () => setTimeout(() => { window.scrollTo(0, 0); fitApp(); const b = $('#group-msgs'); b.scrollTop = b.scrollHeight; }, 350));
   $('#group-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendGroup(); });
   if (isWeb()) { show('thread'); playThread(); }
