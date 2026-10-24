@@ -1,4 +1,4 @@
-const { loadDoc, withDoc, send, cleanText, filterBad, rateLimit, ipOf } = require('./_lib');
+const { loadDoc, withDoc, send, cleanText, filterBad, rateLimit, ipOf, readJson } = require('./_lib');
 module.exports = async (req, res) => {
   try {
     if (req.method === 'GET') {
@@ -7,7 +7,8 @@ module.exports = async (req, res) => {
     }
     if (req.method === 'POST') {
       if (!rateLimit('msg:' + ipOf(req), 30, 3600e3)) return send(res, 429, { error: 'rate limited' });
-      const body = typeof req.body === 'object' && req.body ? req.body : JSON.parse(await readBody(req) || '{}');
+      const body = await readJson(req);
+    if (!body) return send(res, 400, { error: 'body tidak valid' });
       const name = filterBad(cleanText(body.name, 40));
       const text = filterBad(cleanText(body.text, 500));
       if (!name || !text) return send(res, 400, { error: 'nama dan pesan wajib diisi' });

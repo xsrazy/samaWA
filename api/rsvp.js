@@ -1,9 +1,10 @@
-const { withDoc, send, cleanText, filterBad, rateLimit, ipOf, pollCounts } = require('./_lib');
+const { withDoc, send, cleanText, filterBad, rateLimit, ipOf, pollCounts, readJson } = require('./_lib');
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return send(res, 405, { error: 'method' });
   if (!rateLimit('rsvp:' + ipOf(req), 20, 3600e3)) return send(res, 429, { error: 'rate limited' });
   try {
-    const body = typeof req.body === 'object' && req.body ? req.body : JSON.parse(await readBody(req) || '{}');
+    const body = await readJson(req);
+    if (!body) return send(res, 400, { error: 'body tidak valid' });
     const guest = filterBad(cleanText(body.guest, 40));
     const choice = Number(body.choice);
     if (!guest) return send(res, 400, { error: 'nama kosong' });

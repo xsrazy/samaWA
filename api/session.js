@@ -1,9 +1,10 @@
-const { loadDoc, send, verifyPassword, adminToken, rateLimit, ipOf } = require('./_lib');
+const { loadDoc, send, verifyPassword, adminToken, rateLimit, ipOf, readJson } = require('./_lib');
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return send(res, 405, { error: 'method' });
   if (!rateLimit('login:' + ipOf(req), 10, 900e3)) return send(res, 429, { error: 'terlalu banyak percobaan' });
   try {
-    const body = typeof req.body === 'object' && req.body ? req.body : JSON.parse(await readBody(req) || '{}');
+    const body = await readJson(req);
+    if (!body) return send(res, 400, { error: 'body tidak valid' });
     const doc = await loadDoc();
     const email = String(body.email || '').trim().toLowerCase();
     if (email !== doc.admin.email || !verifyPassword(String(body.password || ''), doc.admin.pass))

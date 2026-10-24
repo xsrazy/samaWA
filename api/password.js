@@ -1,8 +1,9 @@
-const { withDoc, send, requireAdmin, verifyPassword, hashPassword, adminToken } = require('./_lib');
+const { withDoc, send, requireAdmin, verifyPassword, hashPassword, adminToken, readJson } = require('./_lib');
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return send(res, 405, { error: 'method' });
   try {
-    const body = typeof req.body === 'object' && req.body ? req.body : JSON.parse(await readBody(req) || '{}');
+    const body = await readJson(req);
+    if (!body) return send(res, 400, { error: 'body tidak valid' });
     const out = await withDoc((doc) => {
       if (!requireAdmin(req, doc)) return { value: { error: 'unauthorized' } };
       if (!verifyPassword(String(body.current || ''), doc.admin.pass)) return { value: { error: 'password lama salah' } };
@@ -12,7 +13,7 @@ module.exports = async (req, res) => {
       doc.tokenVersion += 1;
       return { mutated: true, value: { ok: true, token: adminToken(doc) } };
     });
-    if (out && out.error) return send(res, 400, out);
+    if (out && out.error) return send(res, out.error === 'unauthorized' ? 401 : 400, out);
     send(res, 200, out);
   } catch (e) { send(res, 500, { error: 'password failed' }); }
 };

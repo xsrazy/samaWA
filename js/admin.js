@@ -70,11 +70,11 @@ function pollBars(d) {
 function pvBubble(s, item) {
   const T = (inner, cls) => `<div class="pv-row"><div class="pv-bubble ${cls || ''}">${inner}</div></div>`;
   switch (item.kind) {
-    case 'text': return T(esc(item.text || '').replace('{nama}', 'kamu').replace(/\n/g, '<br>'));
+    case 'text': return T(esc(item.text || '').split('{nama}').join('kamu').replace(/\n/g, '<br>'));
     case 'photo': return T(`<img src="${esc(item.src || s.photo)}" alt=""><div class="pv-cap">${esc(item.caption || '')}</div>`, 'pv-photo');
     case 'countdown': return T(`<div class="pv-cd"><b>-- : -- : -- : --</b><span>hari &nbsp;:&nbsp; jam &nbsp;:&nbsp; menit &nbsp;:&nbsp; detik</span><span>menuju hari bahagia</span><b class="pv-cd-date">${esc(s.dateLabel)}</b></div>`);
     case 'location': return T(`<div class="pv-loc"><div class="pv-map">&#128205;</div><b>${esc(s.venue)}</b><p>${esc(s.venueAddr)}</p><span class="pv-link">Lihat Lokasi</span></div>`);
-    case 'verse': return T(`<p class="pv-verse">${esc(s.verse)}</p>`);
+    case 'verse': return T(`<p class="pv-verse">${esc(item.text || s.verse)}</p>`);
     case 'voice': {
       const bars = Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 20)}px"></i>`).join('');
       return T(`<div class="pv-vn"><span class="pv-play">&#9654;</span><span class="pv-wave">${bars}</span></div><div class="pv-cap">${esc(item.caption || 'Pesan suara')}</div>`);
@@ -182,6 +182,7 @@ function render() {
         ${F('groom', 'Nama panggilan pria')}${F('bride', 'Nama panggilan wanita')}
         ${F('groomFull', 'Nama lengkap pria')}${F('brideFull', 'Nama lengkap wanita')}
         ${F('dateLabel', 'Label tanggal')}${F('groupName', 'Nama grup resepsi')}
+        <label>Tanggal acara (target hitung mundur)<input id="set-date" type="date" value="${esc((s.dateISO || '').slice(0, 10))}"></label>
         ${F('akad', 'Jam akad')}${F('resepsi', 'Jam resepsi')}
         ${F('venue', 'Tempat')}${F('venueAddr', 'Alamat tempat')}
         ${F('mapsUrl', 'Link Google Maps', true)}
@@ -201,6 +202,8 @@ function render() {
       const settings = {};
       pane.querySelectorAll('[data-set]').forEach((el) => settings[el.dataset.set] = el.value);
       settings.groupName = pane.querySelector('[data-set="groupName"]').value;
+      const dv = pane.querySelector('#set-date');
+      if (dv && dv.value) settings.dateISO = dv.value + 'T03:00:00.000Z';
       settings.gift = s.gift.map((g, i) => ({ bank: pane.querySelector(`[data-gift="${i}:bank"]`).value, num: pane.querySelector(`[data-gift="${i}:num"]`).value, name: pane.querySelector(`[data-gift="${i}:name"]`).value }));
       await api('/api/content', { method: 'PATCH', body: JSON.stringify({ settings, poll: { question: pane.querySelector('[data-pollq]').value } }) });
       toast('Pengaturan tersimpan'); refresh();

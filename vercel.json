@@ -4,7 +4,23 @@
   "redirects": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "samawa-xsrazys-projects.vercel.app" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "samawa-xsrazys-projects.vercel.app"
+        }
+      ],
+      "destination": "https://samawa.xsrazy.web.id/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "samawa-self.vercel.app"
+        }
+      ],
       "destination": "https://samawa.xsrazy.web.id/$1",
       "permanent": true
     }

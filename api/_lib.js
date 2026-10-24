@@ -212,6 +212,11 @@ function rateLimit(key, max, windowMs) {
 function ipOf(req) {
   return (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 }
+async function readJson(req) {
+  try { if (typeof req.body === 'object' && req.body) return req.body; } catch { return null; } // Vercel parses req.body lazily and throws on malformed JSON
+  const raw = await new Promise((ok) => { let d = ''; req.on('data', (c) => (d += c)); req.on('end', () => ok(d)); });
+  try { return JSON.parse(raw || '{}'); } catch { return null; }
+}
 function send(res, code, obj) {
   res.statusCode = code;
   res.setHeader('content-type', 'application/json; charset=utf-8');
@@ -235,4 +240,4 @@ function publicState(doc) {
   };
 }
 
-module.exports = { loadDoc, withDoc, verifyPassword, hashPassword, adminToken, requireAdmin, cleanText, cleanMultiline, filterBad, rateLimit, ipOf, send, pollCounts, publicState };
+module.exports = { loadDoc, withDoc, verifyPassword, hashPassword, adminToken, requireAdmin, cleanText, cleanMultiline, filterBad, rateLimit, ipOf, send, pollCounts, publicState, readJson };

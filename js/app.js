@@ -78,7 +78,7 @@ function senderNameColor(name) {
 const R = {
   text(s, item) {
     let txt = esc(item.text || '');
-    txt = txt.replace('{nama}', esc(state.guest || 'kamu'));
+    txt = txt.split('{nama}').join(esc(state.guest || 'kamu'));
     return row(txt.replace(/\n/g, '<br>'));
   },
   photo(s, item) {
@@ -92,8 +92,8 @@ const R = {
   location(s) {
     return row(`<div class="loc-card"><div class="loc-map"><span class="loc-pin">&#128205;</span></div><div class="loc-body"><b>${esc(s.venue)}</b><p>${esc(s.venueAddr)}</p></div><a class="loc-link" href="${esc(s.mapsUrl)}" target="_blank" rel="noopener">Lihat Lokasi</a></div>`, 'loc');
   },
-  verse(s) {
-    return row(`<p>${esc(s.verse)}</p>`, 'verse');
+  verse(s, item) {
+    return row(`<p>${esc((item && item.text) || s.verse)}</p>`, 'verse');
   },
   voice(s, item) {
     const bars = Array.from({ length: 30 }, () => 6 + Math.round(Math.random() * 22)).map((h) => `<i style="height:${h}px"></i>`).join('');
@@ -132,6 +132,7 @@ function cdParts() {
 
 // ---------- thread playback ----------
 async function playThread() {
+  if (!state.data) { toast('Gagal memuat, periksa koneksi kamu'); return; }
   const box = $('#thread-msgs');
   const d = state.data;
   row.i = 0; row.total = d.script.length; row.baseTs = Date.now(); row.sender = null;
@@ -296,6 +297,7 @@ function updateGroupEntry() {
   timeEl.classList.toggle('unread', unread > 0);
 }
 function openGroup() {
+  if (!state.data) { toast('Gagal memuat, periksa koneksi kamu'); return; }
   if (!state.guest) { openGate(openGroup); return; }
   state.groupFrom = document.querySelector('#view-chats.active') ? 'chats' : 'thread';
   state.joined = true;
