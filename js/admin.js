@@ -16,6 +16,34 @@ async function api(path, opts) {
   if (!res.ok) throw new Error(out.error || 'gagal');
   return out;
 }
+// size the admin shell to the EXACT visible screen (visualViewport), not the
+// layout viewport: on this user's phone the two disagree, which is why the
+// dashboard kept rendering wider than the screen
+function fitAdmin() {
+  const w = document.querySelector('.admin-wrap');
+  if (!w || !window.visualViewport) return;
+  const vv = window.visualViewport;
+  if (vv.width >= 900) {
+    // wide screens keep the centered 1500px shell from CSS
+    w.style.width = ''; w.style.height = ''; w.style.left = '';
+    w.style.top = ''; w.style.right = ''; w.style.bottom = '';
+    w.style.marginLeft = ''; w.style.marginRight = '';
+    return;
+  }
+  w.style.width = vv.width + 'px';
+  w.style.height = vv.height + 'px';
+  w.style.left = vv.offsetLeft + 'px';
+  w.style.top = vv.offsetTop + 'px';
+  w.style.right = 'auto';
+  w.style.bottom = 'auto';
+  w.style.marginLeft = '0';
+  w.style.marginRight = '0';
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', fitAdmin);
+  window.visualViewport.addEventListener('scroll', fitAdmin);
+}
+window.addEventListener('orientationchange', () => setTimeout(fitAdmin, 120));
 function logout() { state.token = ''; localStorage.removeItem('samawa_admin'); document.body.style.overflow = ''; $('#admin-view').classList.add('hidden'); $('#login-view').classList.remove('hidden'); }
 
 $('#login-form').addEventListener('submit', async (e) => {
@@ -43,6 +71,7 @@ async function enter() {
   $('#login-view').classList.add('hidden');
   $('#admin-view').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  fitAdmin();
   await refresh();
 }
 async function refresh() {
