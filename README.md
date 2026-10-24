@@ -15,8 +15,8 @@ The demo content is a fictional wedding (Usra & Zee, Monday, 17 January 2050 at 
 ## Features
 
 - Chat list home styled after WhatsApp, with a Status row and an unread badge on the couple's chat
-- The invitation plays as a chat thread with a typing indicator, plus a replay option
-- Bubble types: personalised text (the guest's name is inserted automatically), photo, live countdown to the wedding date, location card with a maps link, verse, voice note, digital envelope (gift accounts with copy buttons), RSVP poll, and a group invite card
+- The invitation plays as a chat thread: the typing status alternates between the two hosts ("Usra is typing...", then "Zee is typing..."), every incoming bubble carries a coloured sender name alternating between the couple and plays a WhatsApp-style incoming chat tone, and there is a replay option
+- Bubble types: personalised text (the guest's name is inserted automatically), photo, wide live countdown to the wedding date whose numbers are filled in the moment the bubble arrives, wide landscape location card with a maps link, verse, voice note, digital envelope (gift accounts with copy buttons), RSVP poll, and a group invite card
 - Voice note player with the real soundtrack: play/pause, waveform progress, and 1x / 1.5x / 2x playback speed
 - RSVP poll: one vote per guest name, changeable at any time, with live counts shown after voting
 - Group chat guest book: guests join with their name and post congratulations; new messages appear instantly and the view refreshes itself. Once joined, the group also appears in the guest's chat list with a last-message preview and an unread badge
@@ -24,8 +24,7 @@ The demo content is a fictional wedding (Usra & Zee, Monday, 17 January 2050 at 
 - Couple profile page with photo, bio, date, venue, and group rows
 - Guest identity comes from a personal `?to=Guest+Name` link or a one-time name prompt, stored in the browser; there is no access key to type
 - All couple photography is always shown whole, never cropped, in avatars, bubbles, profile, and status
-- Responsive: on phones it looks like the WhatsApp app; on wide screens it switches to a WhatsApp Web layout with the chat list and the open conversation side by side
-- iPhone-style notification banner when the invitation chat first arrives, and again when a new group message lands while the guest is elsewhere in the app; tapping it opens the chat
+- Responsive: on phones it follows the WhatsApp for iPhone look (white headers, blue back chevron, well-rounded bubbles, grey search field, circular header buttons, and a bottom tab bar with Status, Calls, Communities, Chats, and Settings); on wide screens it switches to a WhatsApp Web layout with the chat list and the open conversation side by side
 - Bubble timestamps follow the visitor's real clock, so the conversation always looks like it just happened
 - Admin dashboard styled after WhatsApp Web: a summary overview with stat cards and poll bars, chat-style RSVP and guest book views with moderation, a conversation script editor (reorder, add, and remove bubbles) with a live phone preview, site settings, poll question editing, and password change
 

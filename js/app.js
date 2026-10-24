@@ -27,36 +27,31 @@ function guestName() {
 }
 function fmtTime(ts) { const d = new Date(ts); return String(d.getHours()).padStart(2, '0') + '.' + String(d.getMinutes()).padStart(2, '0'); }
 
-// ---------- iPhone-style incoming chat notification ----------
-let notifTimer = null, notifAction = null, userTouched = false, lastGroupCount = null;
-document.addEventListener('pointerdown', () => { userTouched = true; }, { once: true });
-function ding() {
-  if (!userTouched) return;
+// ---------- incoming chat tone (played when a chat bubble arrives) ----------
+let audioCtx = null, audioUnlocked = false, lastGroupCount = null;
+function ensureAudio() {
   try {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    const ctx = ding.ctx || (ding.ctx = new Ctx());
-    if (ctx.state === 'suspended') ctx.resume();
-    const t = ctx.currentTime;
-    [1318.5, 1760].forEach((fr, i) => {
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = 'sine'; o.frequency.value = fr;
-      g.gain.setValueAtTime(0.0001, t + i * 0.09);
-      g.gain.exponentialRampToValueAtTime(0.1, t + i * 0.09 + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 0.4);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(t + i * 0.09); o.stop(t + i * 0.09 + 0.45);
-    });
-  } catch { /* sound is a bonus, never break the app for it */ }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch { /* audio is a bonus */ }
 }
-function notify(title, body, action) {
-  $('#notif-title').textContent = title;
-  $('#notif-body').textContent = body;
-  notifAction = action || null;
-  const el = $('#ios-notif');
-  el.classList.add('show');
-  ding();
-  clearTimeout(notifTimer);
-  notifTimer = setTimeout(() => el.classList.remove('show'), 5600);
+document.addEventListener('pointerdown', () => { audioUnlocked = true; ensureAudio(); });
+function chatTone() {
+  if (!audioUnlocked) return;
+  ensureAudio();
+  if (!audioCtx) return;
+  try {
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(640, t);
+    o.frequency.exponentialRampToValueAtTime(210, t + 0.09);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.14, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t + 0.17);
+  } catch { /* never break the app for a sound */ }
 }
 function bubbleTime(i) {
   const total = row.total || 1;
@@ -65,7 +60,8 @@ function bubbleTime(i) {
 }
 
 // ---------- bubble renderers ----------
-function row(html, cls) { return `<div class="row in"><div class="bubble ${cls || ''}">${html}<span class="time">${bubbleTime(row.i++)}</span></div></div>`; }
+function row(html, cls) { const nm = row.sender ? `<div class="sender-name" style="color:${senderNameColor(row.sender)}">${esc(row.sender)}</div>` : ''; return `<div class="row in"><div class="bubble ${cls || ''}">${nm}${html}<span class="time">${bubbleTime(row.i++)}</span></div></div>`; }
+row.sender = null;
 row.i = 0;
 function senderNameColor(name) {
   const colors = ['#e91e63', '#9c27b0', '#3f51b5', '#009688', '#ff5722', '#795548', '#607d8b', '#f44336'];
@@ -83,7 +79,8 @@ const R = {
     return row(`<img src="${esc(src)}" alt="Foto mempelai"><div class="cap">${esc(item.caption || '')}</div>`, 'photo');
   },
   countdown(s) {
-    return row(`<div class="countdown"><div class="cd-grid" data-cd-grid><div class="cd-cell days"><div class="cd-v" data-cd-d>0</div><div class="cd-l">hari</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-h>00</div><div class="cd-l">jam</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-m>00</div><div class="cd-l">menit</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-s>00</div><div class="cd-l">detik</div></div></div><div class="cd-label">menuju hari bahagia</div><div class="cd-date">${esc(s.dateLabel)}</div></div>`);
+    const p = cdParts();
+    return row(`<div class="countdown"><div class="cd-grid" data-cd-grid><div class="cd-cell days"><div class="cd-v" data-cd-d>${p.d}</div><div class="cd-l">hari</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-h>${p.h}</div><div class="cd-l">jam</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-m>${p.m}</div><div class="cd-l">menit</div></div><div class="cd-sep">:</div><div class="cd-cell"><div class="cd-v" data-cd-s>${p.s}</div><div class="cd-l">detik</div></div></div><div class="cd-label">menuju hari bahagia</div><div class="cd-date">${esc(s.dateLabel)}</div></div>`, 'cd');
   },
   location(s) {
     return row(`<div class="loc-card"><div class="loc-map"><span class="loc-pin">&#128205;</span></div><div class="loc-body"><b>${esc(s.venue)}</b><p>${esc(s.venueAddr)}</p></div><a class="loc-link" href="${esc(s.mapsUrl)}" target="_blank" rel="noopener">Lihat Lokasi</a></div>`, 'loc');
@@ -116,18 +113,31 @@ function renderPoll(poll) {
   return `<div class="poll-q">${esc(poll.question)}</div><div class="poll-note">${voted ? 'Terima kasih sudah konfirmasi. Kamu bisa mengubah pilihanmu.' : 'Pilih satu jawaban buat konfirmasi kehadiran kamu.'}</div>${opts}<div class="poll-foot">${poll.total} suara masuk</div>`;
 }
 
+function cdParts() {
+  if (!state.data) return { d: 0, h: '00', m: '00', s: '00' };
+  let diff = Math.max(0, new Date(state.data.settings.dateISO).getTime() - Date.now());
+  const d = Math.floor(diff / 864e5); diff -= d * 864e5;
+  const h = Math.floor(diff / 36e5); diff -= h * 36e5;
+  const m = Math.floor(diff / 6e4); diff -= m * 6e4;
+  const sec = Math.floor(diff / 1e3);
+  return { d, h: String(h).padStart(2, '0'), m: String(m).padStart(2, '0'), s: String(sec).padStart(2, '0') };
+}
+
 // ---------- thread playback ----------
 async function playThread() {
   const box = $('#thread-msgs');
   const d = state.data;
-  row.i = 0; row.total = d.script.length; row.baseTs = Date.now();
+  row.i = 0; row.total = d.script.length; row.baseTs = Date.now(); row.sender = null;
   box.innerHTML = `<div class="date-chip">Hari ini</div><div class="sys-chip">&#128274; Pesan dan panggilan terenkripsi secara end-to-end. <b>Usra &amp; Zee</b> tidak bisa membaca chat ini, yang bisa cuma kamu dan tanggal 17 Januari 2050.</div>`;
   const instant = sessionStorage.getItem('samawa_seen') === '1';
   const statusEl = $('#typing-status');
+  let ix = 0;
   for (const item of d.script) {
     if (!R[item.kind]) continue;
+    const sender = ix % 2 === 0 ? d.settings.groom : d.settings.bride;
+    ix++;
     if (!instant) {
-      statusEl.textContent = 'sedang mengetik...';
+      statusEl.textContent = sender + ' sedang mengetik...';
       const t = document.createElement('div');
       t.className = 'row in'; t.innerHTML = '<div class="bubble typing"><i></i><i></i><i></i></div>';
       box.appendChild(t); box.scrollTop = box.scrollHeight;
@@ -135,10 +145,13 @@ async function playThread() {
       t.remove();
       statusEl.textContent = 'online';
     }
+    row.sender = sender;
     box.insertAdjacentHTML('beforeend', R[item.kind](d.settings, item, d.poll, d.group));
+    row.sender = null;
     bindBubbleBits(box);
     box.scrollTop = box.scrollHeight;
-    if (!instant) await new Promise((r) => setTimeout(r, 350));
+    if (item.kind === 'countdown') startCountdown();
+    if (!instant) { chatTone(); await new Promise((r) => setTimeout(r, 350)); }
   }
   sessionStorage.setItem('samawa_seen', '1');
   state.playedAll = true;
@@ -150,17 +163,12 @@ function startCountdown() {
   const grid = document.querySelector('[data-cd-grid]');
   if (!grid) return;
   const f = { d: grid.querySelector('[data-cd-d]'), h: grid.querySelector('[data-cd-h]'), m: grid.querySelector('[data-cd-m]'), s: grid.querySelector('[data-cd-s]') };
-  const target = new Date(state.data.settings.dateISO).getTime();
   const tick = () => {
-    let diff = Math.max(0, target - Date.now());
-    const days = Math.floor(diff / 864e5); diff -= days * 864e5;
-    const hrs = Math.floor(diff / 36e5); diff -= hrs * 36e5;
-    const min = Math.floor(diff / 6e4); diff -= min * 6e4;
-    const sec = Math.floor(diff / 1e3);
-    f.d.textContent = days;
-    f.h.textContent = String(hrs).padStart(2, '0');
-    f.m.textContent = String(min).padStart(2, '0');
-    f.s.textContent = String(sec).padStart(2, '0');
+    const p = cdParts();
+    f.d.textContent = p.d;
+    f.h.textContent = p.h;
+    f.m.textContent = p.m;
+    f.s.textContent = p.s;
   };
   tick(); clearInterval(cdTimer); cdTimer = setInterval(tick, 1000);
 }
@@ -197,7 +205,7 @@ function bindBubbleBits(scope) {
 
 function repaintPoll() {
   const wrap = document.querySelector('.bubble.pollwrap');
-  if (wrap) { const time = wrap.querySelector('.time'); wrap.innerHTML = renderPoll(state.data.poll) + (time ? time.outerHTML : ''); bindBubbleBits(wrap); }
+  if (wrap) { const time = wrap.querySelector('.time'); const nm = wrap.querySelector('.sender-name'); wrap.innerHTML = (nm ? nm.outerHTML : '') + renderPoll(state.data.poll) + (time ? time.outerHTML : ''); bindBubbleBits(wrap); }
 }
 async function vote(choice) {
   if (!state.guest) { openGate(() => vote(choice)); return; }
@@ -246,8 +254,13 @@ async function loadGroup() {
   try {
     const res = await fetch('/api/messages');
     const out = await res.json();
+    const prevGroupCount = lastGroupCount;
     state.groupMsgs = out.messages || [];
     lastGroupCount = state.groupMsgs.length;
+    if (prevGroupCount != null && state.groupMsgs.length > prevGroupCount && $('#view-group').classList.contains('active')) {
+      const newest = state.groupMsgs[state.groupMsgs.length - 1];
+      if (newest && !(state.guest && newest.name.toLowerCase() === state.guest.toLowerCase())) chatTone();
+    }
     markGroupSeen();
     renderGroup(mergedMsgs());
     updateGroupEntry();
@@ -404,19 +417,9 @@ async function boot() {
     show(cur ? cur.id.replace('view-', '') : 'chats');
     if (w && !state.playedAll) playThread();
   });
-  $('#ios-notif').onclick = () => { $('#ios-notif').classList.remove('show'); if (notifAction) { const f = notifAction; notifAction = null; f(); } };
   $('#gate-cancel').onclick = cancelGate;
   $('#name-gate').addEventListener('click', (e) => { if (e.target.id === 'name-gate') cancelGate(); });
-  // the invitation "arrives" like a real chat shortly after the list first opens (mobile app mode)
-  if (!isWeb() && state.data && !sessionStorage.getItem('samawa_notified')) {
-    setTimeout(() => {
-      if (state.playedAll || !$('#view-chats').classList.contains('active')) return;
-      sessionStorage.setItem('samawa_notified', '1');
-      const s = state.data.settings;
-      notify(s.groom + ' & ' + s.bride, 'Assalamualaikum! Kami punya kabar bahagia, buka ya undangannya', () => $('#chat-real').click());
-    }, 1500);
-  }
-  // new group messages arrive as iPhone-style banners while the guest is elsewhere in the app
+  // poll for new group messages while the guest is elsewhere: update the chat-list entry, badge, and play the chat tone
   setInterval(async () => {
     if (!state.joined || !state.data) return;
     if ($('#view-group').classList.contains('active')) return;
@@ -430,7 +433,7 @@ async function boot() {
         state.groupMsgs = msgs;
         lastGroupCount = msgs.length;
         updateGroupEntry();
-        if (!(state.guest && m.name.toLowerCase() === state.guest.toLowerCase())) notify(m.name, m.text, openGroup);
+        if (m && !(state.guest && m.name.toLowerCase() === state.guest.toLowerCase())) chatTone();
       }
     } catch { /* silent poll */ }
   }, 25000);

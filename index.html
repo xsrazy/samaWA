@@ -15,7 +15,7 @@
 <meta name="twitter:title" content="samaWA - Undangan Pernikahan Usra & Zee">
 <meta name="twitter:description" content="Undangan pernikahan dalam bentuk obrolan WhatsApp. Senin, 17 Januari 2050, Jam Gadang, Bukittinggi.">
 <meta name="twitter:image" content="https://samawa.xsrazy.web.id/assets/img/og.jpg">
-<meta name="theme-color" content="#008069">
+<meta name="theme-color" content="#f7f7f7">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
 <link rel="apple-touch-icon" href="/assets/img/icon-512.png">
 <link rel="stylesheet" href="/css/app.css">
@@ -27,9 +27,9 @@
   <section id="view-chats" class="view active">
     <header class="topbar">
       <div class="topbar-title">sama<span class="wa-big">WA</span></div>
-      <div class="topbar-icons"><span class="ic" data-deco>&#128247;</span><span class="ic" data-deco>&#128269;</span><span class="ic" data-deco>&#8942;</span></div>
+      <div class="topbar-icons"><span class="ic-btn" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span class="ic-btn" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></div>
     </header>
-    <div class="searchbar"><div class="search-pill">&#128269;&nbsp; Cari atau mulai chat baru</div></div>
+    <div class="searchbar"><div class="search-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16.7 16.7"/></svg> Cari atau mulai chat baru</div></div>
     <div class="status-zone">
       <div class="status-label">Status</div>
       <div class="status-row">
@@ -82,36 +82,41 @@
         </span>
       </button>
     </div>
-    <div class="fab" data-deco>&#128172;</div>
-    <footer class="chats-foot">Undangan pernikahan digital dalam bentuk obrolan. Ketuk chat Usra &amp; Zee untuk membuka.</footer>
+    <nav class="tabbar">
+      <button class="tab" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="4.5 3.2"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg><span>Status</span></button>
+      <button class="tab" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Panggilan</span></button>
+      <button class="tab" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9.5" cy="12" r="5.5"/><circle cx="16" cy="12" r="5.5"/></svg><span>Komunitas</span></button>
+      <button class="tab active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>Obrolan</span></button>
+      <button class="tab" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h8M18 7h2M4 17h2M12 17h8"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg><span>Setelan</span></button>
+    </nav>
   </section>
 
   <!-- ============ THREAD ============ -->
   <section id="view-thread" class="view">
     <header class="chatbar">
-      <button class="back" data-go="chats">&#8592;</button>
+      <button class="back" data-go="chats">&#8249;</button>
       <button class="chatbar-id" id="open-profile">
         <span class="avatar sm"><img src="/assets/img/couple.webp" alt="Foto Usra dan Zee"></span>
         <span class="chatbar-names"><span class="chatbar-name">Usra &amp; Zee</span><span class="chatbar-status" id="typing-status">online</span></span>
       </button>
-      <div class="topbar-icons"><span class="ic" data-deco>&#128249;</span><span class="ic" data-deco>&#128222;</span><span class="ic" id="replay-btn" title="Putar ulang undangan">&#8942;</span></div>
+      <div class="topbar-icons"><span class="ic" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span><span class="ic" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><span class="ic" id="replay-btn" title="Putar ulang undangan">&#8942;</span></div>
     </header>
     <main class="thread" id="thread-msgs"></main>
     <div class="inputbar">
       <div class="input-pill"><span class="ic" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.6 14.2c.9 1.2 2 1.8 3.4 1.8s2.5-.6 3.4-1.8"/><circle cx="9" cy="9.6" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="9.6" r="1.1" fill="currentColor" stroke="none"/></svg></span><span class="input-fake">Pesan</span><span class="ic" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></span><span class="ic" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span></div>
-      <div class="mic" data-deco><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3z"/><path d="M17.91 10.97c-.5 0-.9.37-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.18a1 1 0 0 0-.98-.85c-.55 0-1.02.45-1.09 1.01C4.95 15.82 7.9 18.64 11 19.14V21a1 1 0 1 0 2 0v-1.86c3.1-.5 6.05-3.32 6-7.16-.07-.56-.54-1.01-1.09-1.01z"/></svg></div>
+      <div class="mic send" data-deco title="Kirim"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></div>
     </div>
   </section>
 
   <!-- ============ GROUP ============ -->
   <section id="view-group" class="view">
     <header class="chatbar">
-      <button class="back" id="group-back" data-go="thread">&#8592;</button>
+      <button class="back" id="group-back" data-go="thread">&#8249;</button>
       <div class="chatbar-id">
         <span class="avatar sm"><img src="/assets/img/couple.webp" alt="Foto grup resepsi"></span>
         <span class="chatbar-names"><span class="chatbar-name" id="group-name">Grup Resepsi</span><span class="chatbar-status" id="group-members">Usra, Zee, kamu</span></span>
       </div>
-      <div class="topbar-icons"><span class="ic" data-deco>&#128249;</span><span class="ic" data-deco>&#128222;</span><span class="ic" data-deco>&#8942;</span></div>
+      <div class="topbar-icons"><span class="ic" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span><span class="ic" data-deco><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><span class="ic" data-deco>&#8942;</span></div>
     </header>
     <main class="thread" id="group-msgs"></main>
     <div class="inputbar">
@@ -123,7 +128,7 @@
   <!-- ============ PROFILE ============ -->
   <section id="view-profile" class="view">
     <header class="chatbar">
-      <button class="back" data-go="thread">&#8592;</button>
+      <button class="back" data-go="thread">&#8249;</button>
       <div class="chatbar-id"><span class="chatbar-names"><span class="chatbar-name">Profil</span></span></div>
       <div class="topbar-icons"><span class="ic" data-deco>&#8942;</span></div>
     </header>
@@ -146,7 +151,7 @@
   <section id="view-status" class="view">
     <div class="status-progress" id="status-progress"></div>
     <header class="status-head">
-      <button class="back light" id="status-close">&#8592;</button>
+      <button class="back light" id="status-close">&#8249;</button>
       <span class="avatar sm"><img src="/assets/img/couple.webp" alt="Foto Usra dan Zee"></span>
       <span class="chatbar-names"><span class="chatbar-name">Usra &amp; Zee</span><span class="chatbar-status" id="status-time">Hari ini 01.09</span></span>
     </header>
@@ -169,14 +174,6 @@
   </div>
 </div>
 
-<div id="ios-notif" class="ios-notif" role="button" aria-label="Notifikasi pesan baru">
-  <span class="notif-ic"><img src="/assets/img/couple.webp" alt=""></span>
-  <span class="notif-mid">
-    <span class="notif-head"><span class="notif-app">samaWA</span><span class="notif-when">sekarang</span></span>
-    <span class="notif-title" id="notif-title">Usra &amp; Zee</span>
-    <span class="notif-body" id="notif-body"></span>
-  </span>
-</div>
 <div id="toast" class="toast hidden"></div>
 <audio id="vn-audio" preload="metadata"></audio>
 <script src="/js/app.js"></script>
