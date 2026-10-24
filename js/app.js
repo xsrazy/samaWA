@@ -5,6 +5,13 @@ const state = { data: null, guest: '', vote: null, playedAll: false, groupTimer:
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hidden'), 2400); }
 const webMq = window.matchMedia('(min-width: 900px)');
+function fitApp() {
+  const app = document.getElementById('app');
+  if (!app) return;
+  if (webMq.matches || !window.visualViewport) { app.style.height = ''; return; }
+  app.style.height = window.visualViewport.height + 'px';
+}
+if (window.visualViewport) { window.visualViewport.addEventListener('resize', fitApp); window.visualViewport.addEventListener('scroll', fitApp); }
 function isWeb() { return webMq.matches; }
 function show(view) {
   if (isWeb()) {
@@ -89,12 +96,12 @@ const R = {
     return row(`<p>${esc(s.verse)}</p>`, 'verse');
   },
   voice(s, item) {
-    const bars = Array.from({ length: 36 }, () => 6 + Math.round(Math.random() * 22)).map((h) => `<i style="height:${h}px"></i>`).join('');
+    const bars = Array.from({ length: 30 }, () => 6 + Math.round(Math.random() * 22)).map((h) => `<i style="height:${h}px"></i>`).join('');
     return row(`<div class="vn"><button class="vn-play" data-vn-play>&#9654;</button><div class="vn-mid"><div class="vn-wave" data-vn-wave>${bars}</div><div class="vn-meta"><span data-vn-dur>0:23</span><span class="vn-cap">${esc(item.caption || 'Pesan suara')}</span><button class="vn-rate" data-vn-rate>1x</button></div></div><div class="vn-side"><span class="avatar"><img src="${esc(s.photo)}" alt="Usra dan Zee"></span></div></div>`);
   },
   gift(s) {
     const rowsHtml = s.gift.map((g) => `<div class="gift-row"><span class="gift-bank">${esc(g.bank)}</span><span class="gift-mid"><span class="gift-num">${esc(g.num)}</span><span class="gift-name">A.n. ${esc(g.name)}</span></span><button class="gift-copy" data-copy="${esc(g.num)}">SALIN</button></div>`).join('');
-    return row(`<b>&#128140; Amplop Digital</b><p style="color:var(--muted);font-size:13.5px;margin:2px 0 4px">Doa restu kamu yang utama. Kalau ingin memberi tanda kasih, ini salurannya:</p>${rowsHtml}`);
+    return row(`<b>&#128140; Amplop Digital</b><p style="color:var(--muted);font-size:13.5px;margin:2px 0 4px">Doa restu kamu yang utama. Kalau ingin memberi tanda kasih, ini salurannya:</p>${rowsHtml}`, 'gift');
   },
   poll(s, item, poll) {
     return row(renderPoll(poll), 'pollwrap');
@@ -194,7 +201,7 @@ function bindBubbleBits(scope) {
     const paint = () => {
       if (!audio.duration) return;
       const p = audio.currentTime / audio.duration;
-      wave.querySelectorAll('i').forEach((bar, i) => bar.classList.toggle('on', i / 36 <= p));
+      wave.querySelectorAll('i').forEach((bar, i) => bar.classList.toggle('on', i / 30 <= p));
       const left = Math.ceil(audio.duration - audio.currentTime);
       dur.textContent = '0:' + String(left).padStart(2, '0');
     };
@@ -406,6 +413,7 @@ async function boot() {
   $('#group-back').onclick = () => show(state.groupFrom === 'chats' ? 'chats' : 'thread');
   $('#group-send').onclick = () => { if ($('#group-input').value.trim()) sendGroup(); else { $('#group-input').focus(); toast('Ketik pesan dulu ya'); } };
   $('#group-input').addEventListener('input', syncSendBtn);
+  $('#group-input').addEventListener('focus', () => setTimeout(() => { window.scrollTo(0, 0); fitApp(); const b = $('#group-msgs'); b.scrollTop = b.scrollHeight; }, 350));
   $('#group-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendGroup(); });
   if (isWeb()) { show('thread'); playThread(); }
   let wasWeb = isWeb();
@@ -440,4 +448,4 @@ async function boot() {
   $('#gate-save').onclick = closeGate;
   $('#gate-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') closeGate(); });
 }
-document.addEventListener('DOMContentLoaded', boot);
+document.addEventListener('DOMContentLoaded', () => { fitApp(); boot(); });

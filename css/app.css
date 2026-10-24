@@ -117,11 +117,11 @@ img{display:block}
 .bubble.verse p{font-style:italic;font-size:14.3px}
 
 /* voice note */
-.vn{display:flex;align-items:center;gap:9px;padding:3px 2px;min-width:0}
+.vn{display:flex;align-items:center;gap:9px;padding:3px 2px;min-width:0;width:100%}
 .vn-play{width:42px;height:42px;border-radius:50%;background:var(--teal);color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center;flex:none}
-.vn-mid{flex:1}
+.vn-mid{flex:1;min-width:0}
 .vn-wave{display:flex;align-items:center;gap:2px;height:30px}
-.vn-wave i{flex:1;background:#c9d1d4;border-radius:2px;min-width:2px}
+.vn-wave i{flex:1;background:#c9d1d4;border-radius:2px;min-width:0}
 .vn-wave i.on{background:var(--teal)}
 .vn-meta{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
 .vn-cap{flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -131,11 +131,12 @@ img{display:block}
 .vn-side .avatar{width:44px;height:44px}
 
 /* gift */
-.gift-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:1px solid var(--divider);flex-wrap:wrap}
+.bubble.gift{width:min(340px,92%)}
+.gift-row{display:flex;align-items:center;gap:9px;padding:8px 2px;border-top:1px solid var(--divider);flex-wrap:nowrap}
 .gift-row:first-of-type{border-top:none}
-.gift-bank{font-weight:700;color:var(--green-dark);font-size:13px;background:#e7ffdb;border-radius:6px;padding:4px 6px;white-space:nowrap;width:88px;text-align:center;flex:none}
-.gift-mid{display:flex;flex-direction:column;min-width:0}
-.gift-num{font-family:ui-monospace,Menlo,monospace;font-size:14.5px;font-weight:600}
+.gift-bank{font-weight:700;color:var(--green-dark);font-size:12.5px;background:#e7ffdb;border-radius:6px;padding:4px 6px;white-space:nowrap;width:78px;text-align:center;flex:none}
+.gift-mid{display:flex;flex-direction:column;min-width:0;flex:1}
+.gift-num{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;font-weight:600;white-space:nowrap}
 .gift-name{font-size:12px;color:var(--muted)}
 .gift-copy{margin-left:auto;color:var(--green);font-weight:700;font-size:13px;border:1px solid var(--green);border-radius:14px;padding:4px 12px;white-space:nowrap}
 
