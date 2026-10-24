@@ -72,8 +72,10 @@ async function enter() {
   $('#admin-view').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   fitAdmin();
-  await refresh();
+  try { await refresh(); }
+  catch (e) { if (e.message !== 'unauthorized') toast('Gagal memuat, ketuk Muat ulang untuk coba lagi'); throw e; }
 }
+function reload() { refresh().catch((e) => { if (e.message !== 'unauthorized') toast('Gagal memuat, coba lagi'); }); }
 async function refresh() {
   state.data = await api('/api/admin');
   const d = state.data;
@@ -102,14 +104,19 @@ function pvBubble(s, item) {
   switch (item.kind) {
     case 'text': return T(esc(item.text || '').split('{nama}').join('kamu').replace(/\n/g, '<br>'));
     case 'photo': return T(`<img src="${esc(item.src || s.photo)}" alt=""><div class="pv-cap">${esc(item.caption || '')}</div>`, 'pv-photo');
-    case 'countdown': return T(`<div class="pv-cd"><b>-- : -- : -- : --</b><span>hari &nbsp;:&nbsp; jam &nbsp;:&nbsp; menit &nbsp;:&nbsp; detik</span><span>menuju hari bahagia</span><b class="pv-cd-date">${esc(s.dateLabel)}</b></div>`);
+    case 'countdown': {
+      const t = new Date(s.dateISO).getTime();
+      const diff = isNaN(t) ? 0 : Math.max(0, t - Date.now());
+      const dd = Math.floor(diff / 864e5); const hh = String(Math.floor(diff / 36e5) % 24).padStart(2, '0'); const mm = String(Math.floor(diff / 6e4) % 60).padStart(2, '0'); const ss = String(Math.floor(diff / 1e3) % 60).padStart(2, '0');
+      return T(`<div class="pv-cd"><b>${dd} : ${hh} : ${mm} : ${ss}</b><span>hari &nbsp;:&nbsp; jam &nbsp;:&nbsp; menit &nbsp;:&nbsp; detik</span><span>menuju hari bahagia</span><b class="pv-cd-date">${esc(s.dateLabel)}</b></div>`);
+    }
     case 'location': return T(`<div class="pv-loc"><div class="pv-map">&#128205;</div><b>${esc(s.venue)}</b><p>${esc(s.venueAddr)}</p><span class="pv-link">Lihat Lokasi</span></div>`);
     case 'verse': return T(`<p class="pv-verse">${esc(item.text || s.verse)}</p>`);
     case 'voice': {
       const bars = Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 20)}px"></i>`).join('');
       return T(`<div class="pv-vn"><span class="pv-play">&#9654;</span><span class="pv-wave">${bars}</span></div><div class="pv-cap">${esc(item.caption || 'Pesan suara')}</div>`);
     }
-    case 'gift': return T(`<b>&#128140; Amplop Digital</b>` + s.gift.map((g) => `<div class="pv-gift"><span>${esc(g.bank)}</span><b>${esc(g.num)}</b><em>SALIN</em></div>`).join(''));
+    case 'gift': return T(`<b>&#128140; Amplop Digital</b>` + s.gift.map((g) => `<div class="pv-gift"><span>${esc(g.bank)}</span><b>${esc(g.num)}</b><em>SALIN</em><span class="pv-gift-name">A.n. ${esc(g.name)}</span></div>`).join(''));
     case 'poll': {
       const d = state.data;
       return T(`<div class="pv-pollq">${esc(d.poll.question)}</div>` + d.poll.options.map((o) => `<div class="pv-opt"><span class="pv-box"></span>${esc(o)}</div>`).join(''));
@@ -147,7 +154,7 @@ function render() {
         <div class="card"><div class="card-title">Suara terbaru</div>${lastVotes || '<p class="empty">Belum ada suara masuk.</p>'}<button class="btn ghost sm" data-goto="rsvp">Lihat semua suara</button></div>
         <div class="card"><div class="card-title">Pesan grup terbaru</div>${lastMsgs || '<p class="empty">Belum ada pesan di grup.</p>'}<button class="btn ghost sm" data-goto="grup">Buka grup resepsi</button></div>
       </div>`;
-    $('#rf').onclick = refresh;
+    $('#rf').onclick = reload;
     pane.querySelectorAll('[data-goto]').forEach((b) => b.onclick = () => setMod(b.dataset.goto));
   }
 
@@ -155,25 +162,27 @@ function render() {
     const rows = d.votes.map((v) => `<div class="vote-row" data-name="${esc(v.guest.toLowerCase())}"><span class="vote-ava" style="background:${CHOICE_COLORS[v.choice]}">${esc((v.guest || '?').slice(0, 1).toUpperCase())}</span><span class="vote-main"><b>${esc(v.guest)}</b><small style="color:${CHOICE_COLORS[v.choice]}">${esc(d.poll.options[v.choice])}</small></span><span class="vote-time">${fmt(v.ts)}</span></div>`).join('');
     pane.innerHTML = head('Polling RSVP', '<button class="btn ghost" id="rf">Muat ulang</button>') + pollBars(d) +
       `<div class="card"><div class="card-title">Daftar tamu</div><input id="rsvp-q" class="search-in" type="text" placeholder="Cari nama tamu..."><div id="vote-list">${rows || '<p class="empty">Belum ada suara masuk.</p>'}</div></div>`;
-    $('#rf').onclick = refresh;
+    $('#rf').onclick = reload;
     const q = $('#rsvp-q');
     if (q) q.oninput = () => { const needle = q.value.toLowerCase(); pane.querySelectorAll('.vote-row').forEach((r) => r.style.display = r.dataset.name.includes(needle) ? '' : 'none'); };
   }
 
   if (state.mod === 'grup') {
+    const oldPanel = pane.querySelector('.grup-panel');
+    const wasNearBottom = !oldPanel || (oldPanel.scrollHeight - oldPanel.scrollTop - oldPanel.clientHeight < 120);
     const chrono = d.messages.slice().reverse();
     const bubbles = chrono.map((m) => `<div class="g-row"><div class="g-bubble"><div class="g-name" style="color:${nameColor(m.name)}">${esc(m.name)}</div><p>${esc(m.text)}</p><div class="g-meta"><span>${fmt(m.ts)}</span><button class="g-del" data-del="${m.id}">Hapus</button></div></div></div>`).join('');
     pane.innerHTML = head('Grup Resepsi', '<button class="btn ghost" id="rf">Muat ulang</button>') +
       `<div class="grup-note">Pesan tampil kayak di grup WhatsApp beneran, yang lama di atas. Halaman ini nyegarkan sendiri tiap 25 detik.</div>
        <div class="grup-panel">${bubbles || '<p class="empty light">Belum ada pesan di grup.</p>'}</div>`;
-    $('#rf').onclick = refresh;
+    $('#rf').onclick = reload;
     pane.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
       if (!b.classList.contains('confirm')) { b.classList.add('confirm'); b.textContent = 'Yakin?'; setTimeout(() => { b.classList.remove('confirm'); b.textContent = 'Hapus'; }, 2600); return; }
       await api('/api/message-delete?id=' + encodeURIComponent(b.dataset.del), { method: 'DELETE' });
       toast('Pesan dihapus'); refresh();
     });
     const panel = pane.querySelector('.grup-panel');
-    if (panel) panel.scrollTop = panel.scrollHeight;
+    if (panel && wasNearBottom) panel.scrollTop = panel.scrollHeight;
     state.grupTimer = setInterval(() => { if (state.mod === 'grup') refresh(); }, 25000);
   }
 
@@ -251,4 +260,4 @@ $('#rail-q').addEventListener('input', (e) => {
   const q = e.target.value.toLowerCase();
   document.querySelectorAll('.thread-item').forEach((b) => b.style.display = b.textContent.toLowerCase().includes(q) ? '' : 'none');
 });
-if (state.token) enter().catch(() => logout());
+if (state.token) enter().catch((e) => { if (e.message === 'unauthorized') logout(); });

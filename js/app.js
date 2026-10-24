@@ -1,6 +1,6 @@
 // samaWA public app: the invitation is a WhatsApp conversation.
 const $ = (s) => document.querySelector(s);
-const state = { data: null, guest: '', vote: null, playedAll: false, groupTimer: null, groupMsgs: [], pendingMsgs: [], joined: false, groupFrom: 'thread' };
+const state = { data: null, guest: '', vote: null, playedAll: false, playing: false, groupTimer: null, groupMsgs: [], pendingMsgs: [], joined: false, groupFrom: 'thread' };
 
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hidden'), 2400); }
@@ -132,7 +132,10 @@ function cdParts() {
 
 // ---------- thread playback ----------
 async function playThread() {
+  if (state.playing) return;
   if (!state.data) { toast('Gagal memuat, periksa koneksi kamu'); return; }
+  state.playing = true;
+  try {
   const box = $('#thread-msgs');
   const d = state.data;
   row.i = 0; row.total = d.script.length; row.baseTs = Date.now(); row.sender = null;
@@ -159,19 +162,21 @@ async function playThread() {
   sessionStorage.setItem('samawa_seen', '1');
   state.playedAll = true;
   startCountdown();
+  } finally { state.playing = false; }
 }
 
 let cdTimer = null;
 function startCountdown() {
-  const grid = document.querySelector('[data-cd-grid]');
-  if (!grid) return;
-  const f = { d: grid.querySelector('[data-cd-d]'), h: grid.querySelector('[data-cd-h]'), m: grid.querySelector('[data-cd-m]'), s: grid.querySelector('[data-cd-s]') };
   const tick = () => {
     const p = cdParts();
-    f.d.textContent = p.d;
-    f.h.textContent = p.h;
-    f.m.textContent = p.m;
-    f.s.textContent = p.s;
+    document.querySelectorAll('[data-cd-grid]').forEach((grid) => {
+      const f = { d: grid.querySelector('[data-cd-d]'), h: grid.querySelector('[data-cd-h]'), m: grid.querySelector('[data-cd-m]'), s: grid.querySelector('[data-cd-s]') };
+      if (!f.d) return;
+      f.d.textContent = p.d;
+      f.h.textContent = p.h;
+      f.m.textContent = p.m;
+      f.s.textContent = p.s;
+    });
   };
   tick(); clearInterval(cdTimer); cdTimer = setInterval(tick, 1000);
 }
@@ -185,30 +190,38 @@ function bindBubbleBits(scope) {
   });
   scope.querySelectorAll('[data-vote]').forEach((b) => b.onclick = () => vote(Number(b.dataset.vote)));
   scope.querySelectorAll('[data-go-group]').forEach((b) => b.onclick = openGroup);
-  const play = scope.querySelector('[data-vn-play]');
-  if (play && !play._bound) {
+  // every voice-note bubble gets its own controls; the audio element is
+  // shared, so play state and waveform painting apply to all of them
+  const paintVn = () => {
+    if (!audio.duration) return;
+    const p = audio.currentTime / audio.duration;
+    document.querySelectorAll('[data-vn-wave]').forEach((wave) => wave.querySelectorAll('i').forEach((bar, i) => bar.classList.toggle('on', i / 30 <= p)));
+    document.querySelectorAll('[data-vn-dur]').forEach((dur) => { const left = Math.ceil(audio.duration - audio.currentTime); dur.textContent = '0:' + String(left).padStart(2, '0'); });
+  };
+  audio.ontimeupdate = paintVn;
+  audio.onended = () => { document.querySelectorAll('[data-vn-play]').forEach((b) => b.innerHTML = '&#9654;'); paintVn(); };
+  scope.querySelectorAll('[data-vn-play]').forEach((play) => {
+    if (play._bound) return;
     play._bound = true;
     audio.src = state.data.settings.music;
-    play.onclick = () => { if (audio.paused) { audio.play(); play.innerHTML = '&#10073;&#10073;'; } else { audio.pause(); play.innerHTML = '&#9654;'; } };
-    const rate = scope.querySelector('[data-vn-rate]');
-    if (rate) rate.onclick = () => { vnRate = vnRate === 1 ? 1.5 : vnRate === 1.5 ? 2 : 1; audio.playbackRate = vnRate; rate.textContent = vnRate + 'x'; };
-    const wave = scope.querySelector('[data-vn-wave]');
-    const dur = scope.querySelector('[data-vn-dur]');
-    const paint = () => {
-      if (!audio.duration) return;
-      const p = audio.currentTime / audio.duration;
-      wave.querySelectorAll('i').forEach((bar, i) => bar.classList.toggle('on', i / 30 <= p));
-      const left = Math.ceil(audio.duration - audio.currentTime);
-      dur.textContent = '0:' + String(left).padStart(2, '0');
+    const vn = play.closest('.vn');
+    const rate = vn ? vn.querySelector('[data-vn-rate]') : null;
+    play.onclick = () => {
+      if (audio.paused) {
+        audio.play();
+        document.querySelectorAll('[data-vn-play]').forEach((b) => b.innerHTML = '&#9654;');
+        play.innerHTML = '&#10073;&#10073;';
+      } else {
+        audio.pause();
+        document.querySelectorAll('[data-vn-play]').forEach((b) => b.innerHTML = '&#9654;');
+      }
     };
-    audio.ontimeupdate = paint;
-    audio.onended = () => { play.innerHTML = '&#9654;'; paint(); };
-  }
+    if (rate) rate.onclick = () => { vnRate = vnRate === 1 ? 1.5 : vnRate === 1.5 ? 2 : 1; audio.playbackRate = vnRate; document.querySelectorAll('[data-vn-rate]').forEach((r) => r.textContent = vnRate + 'x'); };
+  });
 }
 
 function repaintPoll() {
-  const wrap = document.querySelector('.bubble.pollwrap');
-  if (wrap) { const time = wrap.querySelector('.time'); const nm = wrap.querySelector('.sender-name'); wrap.innerHTML = (nm ? nm.outerHTML : '') + renderPoll(state.data.poll) + (time ? time.outerHTML : ''); bindBubbleBits(wrap); }
+  document.querySelectorAll('.bubble.pollwrap').forEach((wrap) => { const time = wrap.querySelector('.time'); const nm = wrap.querySelector('.sender-name'); wrap.innerHTML = (nm ? nm.outerHTML : '') + renderPoll(state.data.poll) + (time ? time.outerHTML : ''); bindBubbleBits(wrap); });
 }
 async function vote(choice) {
   if (!state.guest) { openGate(() => vote(choice)); return; }
@@ -247,10 +260,14 @@ function renderGroup(messages) {
 }
 function mergedMsgs() {
   const msgs = [...state.groupMsgs];
+  const byId = new Set(msgs.map((m) => m.id));
   const key = (m) => m.name.toLowerCase() + '|' + m.text;
   const counts = {};
   msgs.forEach((m) => { const k = key(m); counts[k] = (counts[k] || 0) + 1; });
-  state.pendingMsgs.forEach((p) => { const k = key(p); if (counts[k]) counts[k] -= 1; else msgs.push(p); });
+  state.pendingMsgs.forEach((p) => {
+    if (p.id) { if (!byId.has(p.id)) msgs.push(p); return; }
+    const k = key(p); if (counts[k]) counts[k] -= 1; else msgs.push(p);
+  });
   return msgs;
 }
 async function loadGroup() {
@@ -268,7 +285,7 @@ async function loadGroup() {
     renderGroup(mergedMsgs());
     updateGroupEntry();
     const names = new Set(state.groupMsgs.map((m) => m.name.toLowerCase()));
-    $('#group-members').textContent = `Usra, Zee, dan ${names.size} tamu lainnya`;
+    $('#group-members').textContent = names.size ? `Usra, Zee, dan ${names.size} tamu lainnya` : 'Usra & Zee';
   } catch { /* keep last render */ }
 }
 function markGroupSeen() { try { localStorage.setItem('samawa_group_seen', String((state.groupMsgs || []).length)); } catch {} }
@@ -320,6 +337,8 @@ async function sendGroup() {
   try {
     const res = await fetch('/api/messages', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: state.guest, text }) });
     if (!res.ok) throw new Error();
+    const out = await res.json().catch(() => ({}));
+    if (out.message && out.message.id) pending.id = out.message.id;
     loadGroup();
   } catch {
     state.pendingMsgs = state.pendingMsgs.filter((p) => p !== pending);
@@ -393,7 +412,7 @@ async function boot() {
   document.querySelectorAll('[data-deco]').forEach((b) => b.onclick = () => toast('Tombol pajangan. Yang beneran tombolnya chat Usra & Zee.'));
   document.querySelectorAll('[data-deco-chat]').forEach((b) => b.onclick = () => toast('Chat ini cuma pajangan. Buka chat Usra & Zee ya.'));
   $('#open-profile').onclick = () => show('profile');
-  $('#replay-btn').onclick = () => { sessionStorage.removeItem('samawa_seen'); state.playedAll = false; playThread(); toast('Undangan diputar ulang'); };
+  $('#replay-btn').onclick = () => { if (state.playing) { toast('Undangan masih diputar'); return; } sessionStorage.removeItem('samawa_seen'); state.playedAll = false; playThread(); toast('Undangan diputar ulang'); };
   $('#status-open').onclick = openStatus;
   $('#profile-status-row').onclick = openStatus;
   $('#status-close').onclick = () => { clearTimeout(statusTimer); show('chats'); };

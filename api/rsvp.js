@@ -1,7 +1,7 @@
 const { withDoc, send, cleanText, filterBad, rateLimit, ipOf, pollCounts, readJson } = require('./_lib');
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return send(res, 405, { error: 'method' });
-  if (!rateLimit('rsvp:' + ipOf(req), 20, 3600e3)) return send(res, 429, { error: 'rate limited' });
+  if (!rateLimit('rsvp:' + ipOf(req), 40, 3600e3)) return send(res, 429, { error: 'rate limited' });
   try {
     const body = await readJson(req);
     if (!body) return send(res, 400, { error: 'body tidak valid' });

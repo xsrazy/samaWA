@@ -38,7 +38,8 @@ async function blobWriteVersion(text) {
     body: text,
   });
   if (!res.ok) throw new Error('blob put failed: ' + res.status);
-  return res.json();
+  const out = await res.json().catch(() => ({}));
+  return { ...out, pathname };
 }
 
 async function blobDelete(urls) {
@@ -73,9 +74,10 @@ async function loadDocVersioned() {
 }
 
 async function saveDoc(doc) {
-  await blobWriteVersion(JSON.stringify(doc));
+  const res = await blobWriteVersion(JSON.stringify(doc));
   const versions = await blobListVersions().catch(() => []);
   if (versions.length > 2) await blobDelete(versions.slice(2).map((b) => b.url));
+  return (res && res.pathname) || null;
 }
 
 // ---------- password / jwt ----------
@@ -172,6 +174,11 @@ async function loadDoc() {
 
 // Serialized read-modify-write with optimistic concurrency: if another
 // writer saved a newer version in the meantime, re-apply on the fresh doc.
+// The pre-save check narrows the race, but two writers that both pass it
+// before either saves would still lose one mutation, so the save is verified
+// afterwards too: if our version is no longer newest, retry on top of it.
+// (Callers must be idempotent: votes upsert by key, messages dedupe by id,
+// content replaces fields, deletes filter by id, password has a landed-guard.)
 async function withDoc(fn) {
   for (let i = 0; i < 6; i++) {
     const { doc, version } = await loadDocVersioned();
@@ -182,7 +189,12 @@ async function withDoc(fn) {
     const newest = now && now.length ? now[0].pathname : null;
     if (newest !== version && !(version === null && newest === null)) continue; // lost race, retry
     current.rev = (current.rev || 1) + 1;
-    await saveDoc(current);
+    const savedPath = await saveDoc(current);
+    if (savedPath) {
+      const after = await blobListVersions().catch(() => null);
+      const newestAfter = after && after.length ? after[0].pathname : null;
+      if (newestAfter && newestAfter !== savedPath) continue; // another writer landed after our check, retry
+    }
     return out.value;
   }
   throw new Error('withDoc contention');
@@ -198,7 +210,7 @@ function cleanMultiline(s, max) {
 const BAD = ['anjing', 'bangsat', 'kontol', 'memek', 'ngentot', 'tolol', 'goblok', 'jancok', 'asu', 'babi'];
 function filterBad(text) {
   let out = text;
-  for (const w of BAD) out = out.replace(new RegExp(w, 'gi'), '***');
+  for (const w of BAD) out = out.replace(new RegExp('\\b' + w + '\\b', 'gi'), '***');
   return out;
 }
 const hits = new Map();

@@ -1,6 +1,12 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/favicon.ico",
+      "destination": "/assets/img/favicon.ico"
+    }
+  ],
   "redirects": [
     {
       "source": "/(.*)",
