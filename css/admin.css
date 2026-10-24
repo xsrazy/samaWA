@@ -19,7 +19,7 @@ input,textarea,select{font:inherit}
 .login-card button{background:var(--green);color:#fff;border:none;border-radius:22px;padding:12px;font-weight:700}
 .err{color:#c62828;font-size:13.5px;min-height:18px;text-align:center}
 /* layout */
-.admin-wrap{display:grid;grid-template-columns:350px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100dvh;max-width:1500px;margin:0 auto;background:#fff;box-shadow:0 0 18px rgba(11,20,26,.14)}
+.admin-wrap{position:fixed;inset:0;display:grid;grid-template-columns:350px minmax(0,1fr);grid-template-rows:minmax(0,1fr);max-width:1500px;margin:0 auto;background:#fff;box-shadow:0 0 18px rgba(11,20,26,.14)}
 .rail{border-right:1px solid var(--divider);display:flex;flex-direction:column;background:#fff;min-height:0}
 .rail-head{display:flex;align-items:center;gap:11px;background:var(--bg);padding:9px 14px}
 .rail-head b{flex:1;font-size:16px}

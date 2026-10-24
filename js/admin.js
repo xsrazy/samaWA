@@ -16,15 +16,7 @@ async function api(path, opts) {
   if (!res.ok) throw new Error(out.error || 'gagal');
   return out;
 }
-// keep the admin shell fitted to the visible viewport (some mobile browsers misreport dvh)
-function fitWrap() {
-  const w = document.querySelector('.admin-wrap');
-  if (!w || !window.visualViewport) return;
-  w.style.height = window.visualViewport.height + 'px';
-}
-if (window.visualViewport) window.visualViewport.addEventListener('resize', fitWrap);
-window.addEventListener('orientationchange', () => setTimeout(fitWrap, 120));
-function logout() { state.token = ''; localStorage.removeItem('samawa_admin'); $('#admin-view').classList.add('hidden'); $('#login-view').classList.remove('hidden'); }
+function logout() { state.token = ''; localStorage.removeItem('samawa_admin'); document.body.style.overflow = ''; $('#admin-view').classList.add('hidden'); $('#login-view').classList.remove('hidden'); }
 
 $('#login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -50,7 +42,7 @@ document.querySelectorAll('.thread-item').forEach((b) => b.onclick = () => setMo
 async function enter() {
   $('#login-view').classList.add('hidden');
   $('#admin-view').classList.remove('hidden');
-  fitWrap();
+  document.body.style.overflow = 'hidden';
   await refresh();
 }
 async function refresh() {
