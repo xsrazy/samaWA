@@ -4,7 +4,7 @@ html,body{height:100%}
 body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
 .hidden{display:none!important}
 button{font:inherit;cursor:pointer}
-input,textarea,select{font:inherit}
+input,textarea,select{font:inherit;max-width:100%}
 .avatar{width:42px;height:42px;border-radius:50%;background:var(--cream);overflow:hidden;display:inline-flex;flex:none}
 .avatar.sm{width:36px;height:36px}
 .avatar img{width:100%;height:100%;object-fit:contain}
@@ -39,7 +39,7 @@ input,textarea,select{font:inherit}
 .t-count:empty{display:none}
 .rail-foot{margin-top:auto;padding:12px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--divider)}
 /* pane */
-.pane{overflow-y:auto;background:#efeae2;padding:0 0 calc(64px + env(safe-area-inset-bottom));min-width:0;min-height:0;-webkit-overflow-scrolling:touch}
+.pane{overflow-y:auto;overflow-x:hidden;background:#efeae2;padding:0 0 calc(64px + env(safe-area-inset-bottom));min-width:0;min-height:0;-webkit-overflow-scrolling:touch}
 .pane-head{position:sticky;top:0;background:var(--bg);padding:13px 22px;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:12px;z-index:3}
 .pane-head h2{font-size:17px;font-weight:600}
 .pane-head .sp{flex:1}
@@ -53,7 +53,7 @@ input,textarea,select{font:inherit}
 .hint{color:var(--muted);font-size:13px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
 /* ringkasan */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:16px 22px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px;margin:16px 22px 0}
 .stat{background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(11,20,26,.14);padding:15px 16px;display:flex;gap:12px;align-items:center}
 .stat-ic{font-size:23px;background:var(--bg);width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
 .stat b{font-size:21px;display:block;line-height:1.1}
@@ -68,7 +68,7 @@ input,textarea,select{font:inherit}
 /* poll bars */
 .bar-row{display:flex;align-items:center;gap:12px;padding:6px 0;font-size:14.5px}
 .bar-name{width:110px;flex:none;font-weight:500}
-.bar-track{flex:1;height:9px;background:#e9edef;border-radius:5px;overflow:hidden}
+.bar-track{flex:1;min-width:0;height:9px;background:#e9edef;border-radius:5px;overflow:hidden}
 .bar-track i{display:block;height:100%;border-radius:5px}
 .bar-num{width:130px;flex:none;text-align:right;color:var(--muted);font-size:13.5px}
 .bar-foot{color:var(--muted);font-size:13px;margin-top:10px;border-top:1px solid #f0f2f5;padding-top:10px}
@@ -82,7 +82,7 @@ input,textarea,select{font:inherit}
 .vote-main small{font-size:13px;font-weight:600}
 .vote-time{color:var(--muted);font-size:12.8px;flex:none}
 /* grup */
-.grup-note{margin:14px 22px 0;color:var(--muted);font-size:13px}
+.grup-note{margin:14px 22px 0;color:var(--muted);font-size:13px;overflow-wrap:break-word}
 .grup-panel{margin:10px 22px 0;background:var(--chat-bg);border-radius:10px;box-shadow:0 1px 2px rgba(11,20,26,.14);padding:16px 14px;max-height:62dvh;overflow-y:auto}
 .g-row{display:flex;margin:3px 0}
 .g-bubble{background:#fff;border-radius:8px;border-top-left-radius:0;padding:7px 10px 6px;max-width:78%;box-shadow:0 1px 1px rgba(11,20,26,.16);font-size:14.5px;line-height:1.4}
@@ -162,6 +162,13 @@ input,textarea,select{font:inherit}
   .t-ic{width:32px;height:32px;font-size:16px}
   .cols{grid-template-columns:1fr}
   .bar-name{width:82px}.bar-num{width:104px}
+  .bar-row{flex-wrap:wrap}
+  .bar-num{width:auto;text-align:left}
+  .script-item{flex-wrap:wrap}
+  .script-item textarea{flex:1 1 200px}
+  .script-item .cap-edit{flex:1 1 200px}
+  .s-btns{flex-direction:row}
+  .vote-row{flex-wrap:wrap}
   .pane-head{padding:11px 14px}
   .card{margin:12px 12px 0;padding:15px 14px}
   .stats{margin:12px 12px 0;gap:10px}
@@ -175,7 +182,7 @@ input,textarea,select{font:inherit}
 }
 @media (max-width:560px){
   .form-grid{grid-template-columns:1fr}
-  .stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .stats{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
   .bar-row{flex-wrap:wrap}
   .bar-num{width:auto}
 }
