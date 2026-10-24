@@ -15,7 +15,7 @@ The demo content is a fictional wedding (Usra & Zee, Monday, 17 January 2050 at 
 ## Features
 
 - Chat list home styled after WhatsApp, with a Status row and an unread badge on the couple's chat
-- The invitation plays as a chat thread: the typing status alternates between the two hosts ("Usra is typing...", then "Zee is typing..."), every incoming bubble carries a coloured sender name alternating between the couple and plays a WhatsApp-style incoming chat tone, and there is a replay option
+- The invitation plays as a one-to-one chat thread with the couple's shared account: a plain typing indicator, a WhatsApp-style incoming chat tone for every bubble, and a replay option. Sender names appear only in the reception group chat, as in any WhatsApp group
 - Bubble types: personalised text (the guest's name is inserted automatically), photo, wide live countdown to the wedding date whose numbers are filled in the moment the bubble arrives, wide landscape location card with a maps link, verse, voice note, digital envelope (gift accounts with copy buttons), RSVP poll, and a group invite card
 - Voice note player with the real soundtrack: play/pause, waveform progress, and 1x / 1.5x / 2x playback speed
 - RSVP poll: one vote per guest name, changeable at any time, with live counts shown after voting

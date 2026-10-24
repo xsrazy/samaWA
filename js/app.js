@@ -138,13 +138,10 @@ async function playThread() {
   box.innerHTML = `<div class="date-chip">Hari ini</div><div class="sys-chip">&#128274; Pesan dan panggilan terenkripsi secara end-to-end. <b>Usra &amp; Zee</b> tidak bisa membaca chat ini, yang bisa cuma kamu dan tanggal 17 Januari 2050.</div>`;
   const instant = sessionStorage.getItem('samawa_seen') === '1';
   const statusEl = $('#typing-status');
-  let ix = 0;
   for (const item of d.script) {
     if (!R[item.kind]) continue;
-    const sender = ix % 2 === 0 ? d.settings.groom : d.settings.bride;
-    ix++;
     if (!instant) {
-      statusEl.textContent = sender + ' sedang mengetik...';
+      statusEl.textContent = 'sedang mengetik...';
       const t = document.createElement('div');
       t.className = 'row in'; t.innerHTML = '<div class="bubble typing"><i></i><i></i><i></i></div>';
       box.appendChild(t); box.scrollTop = box.scrollHeight;
@@ -152,9 +149,7 @@ async function playThread() {
       t.remove();
       statusEl.textContent = 'online';
     }
-    row.sender = sender;
     box.insertAdjacentHTML('beforeend', R[item.kind](d.settings, item, d.poll, d.group));
-    row.sender = null;
     bindBubbleBits(box);
     box.scrollTop = box.scrollHeight;
     if (item.kind === 'countdown') startCountdown();
